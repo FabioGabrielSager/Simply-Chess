@@ -10,6 +10,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -47,6 +48,13 @@ public abstract class Piece {
         }
 
         this.position = target;
+        Optional<Piece> attakedPieceOptional = enemies.stream().filter(e -> e.isAlive()
+                && e.getPosition().getY() == target.getY()
+                && e.getPosition().getX() == target.getX()).findFirst();
+
+        if (attakedPieceOptional.isPresent()) {
+            attakedPieceOptional.get().setAlive(false);
+        }
     }
 
     protected final boolean isMoveToSamePosition(Pair target) {
@@ -57,7 +65,7 @@ public abstract class Piece {
 
     protected final void checkPathCollision(Pair target, List<Piece> allies, List<Piece> enemies)
             throws PieceBlockingException {
-        if(isTherePiecePathBlocking(target, allies, enemies)) {
+        if (isTherePiecePathBlocking(target, allies, enemies)) {
             throw new PieceBlockingException("You are trying to move the piece through another piece");
         }
     }
@@ -66,8 +74,7 @@ public abstract class Piece {
         return false;
     }
 
-    protected void additionalStep(Pair target, List<Piece> allies, List<Piece> enemies) throws IllegalMovementException
-    {
+    protected void additionalStep(Pair target, List<Piece> allies, List<Piece> enemies) throws IllegalMovementException {
 
     }
 

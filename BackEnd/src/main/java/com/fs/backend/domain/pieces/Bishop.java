@@ -30,15 +30,15 @@ public class Bishop extends Piece {
             actualPosition.setX(this.position.getX() + i * (target.getX() > this.position.getX() ? 1 : -1));
             actualPosition.setY(this.position.getY() + i * (target.getY() > this.position.getY() ? 1 : -1));
 
-            if (allies.stream().anyMatch(a ->
-                    a.getPosition().getX() == actualPosition.getX()
+            if (allies.stream().anyMatch(
+                    a -> a.isAlive() && a.getPosition().getX() == actualPosition.getX()
                             && a.getPosition().getY() == actualPosition.getY())) {
                 return true;
             }
 
-            if (enemies.stream().anyMatch(a ->
-                    a.getPosition().getX() == actualPosition.getX()
-                            && a.getPosition().getY() == actualPosition.getY())) {
+            if (enemies.stream().anyMatch(
+                    e -> e.isAlive() && e.getPosition().getX() == actualPosition.getX()
+                            && e.getPosition().getY() == actualPosition.getY())) {
                 return true;
             }
         }

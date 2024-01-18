@@ -15,17 +15,31 @@ public class Pawn extends Piece {
 
     @Override
     public void checkMovement(Pair target) throws IllegalMovementException {
+
+        if (!isLegalMove(target)) {
+            throw new IllegalMovementException("The move violates the Pawn's movement rules");
+        }
+
+    }
+
+    private boolean isLegalMove(Pair target) {
         int direction = this.color.equals(PieceColor.WHITE) ? 1 : -1;
 
-        if (this.position.getX() != target.getX()
-                || target.getY() != this.position.getY() + direction
-                || wasMoved && target.getY() == this.position.getY() + 2 * direction) {
-
-            if (!(target.getY() == this.position.getY() + direction
-                    && Math.abs(target.getX() - this.position.getX()) == 1)) {
-                throw new IllegalMovementException("The move violates the Pawn's movement rules");
+        if (target.getY() == this.position.getY() + direction) {
+            if (this.position.getX() != target.getX()) {
+                if (Math.abs(target.getX() - this.position.getX()) != 1) {
+                    return false;
+                }
             }
+        } else if (target.getY() == this.position.getY() + 2 * direction && !wasMoved) {
+            if (this.position.getX() != target.getX()) {
+                return false;
+            }
+        } else {
+            return false;
         }
+
+        return true;
     }
 
     @Override
@@ -36,8 +50,8 @@ public class Pawn extends Piece {
             throw new IllegalMovementException("The move violates the Pawn's movement rules");
         }
 
-        if(!wasMoved)
-            this.wasMoved =true;
+        if (!wasMoved)
+            this.wasMoved = true;
     }
 
     @Override
@@ -52,6 +66,14 @@ public class Pawn extends Piece {
             }
         }
 
-        return !isMoveToSamePosition(target);
+        return !isMoveToSamePosition(target) && isLegalMove(target);
+    }
+
+    public boolean wasMoved() {
+        return wasMoved;
+    }
+
+    public void setWasMoved(boolean wasMoved) {
+        this.wasMoved = wasMoved;
     }
 }

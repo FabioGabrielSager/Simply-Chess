@@ -36,11 +36,13 @@ public class Queen extends Piece {
 
         if (target.getY() == this.position.getY()) {
             for (int i = 1; i < Math.abs(target.getX() - this.position.getX()); i++) {
-                if (allies.stream().anyMatch(p -> p.getPosition().getX() == actualPosition.getX())) {
+                if (allies.stream().anyMatch(
+                        a -> a.isAlive() && a.getPosition().getX() == actualPosition.getX())) {
                     return true;
                 }
 
-                if (enemies.stream().anyMatch(p -> p.getPosition().getX() == actualPosition.getX())) {
+                if (enemies.stream().anyMatch(
+                        e -> e.isAlive() && e.getPosition().getX() == actualPosition.getX())) {
                     return true;
                 }
             }
@@ -48,11 +50,13 @@ public class Queen extends Piece {
             for (int i = 1; i < Math.abs(target.getY() - this.position.getY()); i++) {
                 actualPosition.setY(this.position.getY() + i * (target.getY() > this.position.getY() ? 1 : -1));
 
-                if (allies.stream().anyMatch(p -> p.getPosition().getY() == actualPosition.getY())) {
+                if (allies.stream().anyMatch(
+                        a -> a.isAlive() && a.getPosition().getY() == actualPosition.getY())) {
                     return true;
                 }
 
-                if (enemies.stream().anyMatch(p -> p.getPosition().getY() == actualPosition.getY())) {
+                if (enemies.stream().anyMatch(
+                        e -> e.isAlive() && e.getPosition().getY() == actualPosition.getY())) {
                     return true;
                 }
             }
@@ -61,15 +65,15 @@ public class Queen extends Piece {
                 actualPosition.setX(this.position.getX() + i * (target.getX() > this.position.getX() ? 1 : -1));
                 actualPosition.setY(this.position.getY() + i * (target.getY() > this.position.getY() ? 1 : -1));
 
-                if (allies.stream().anyMatch(a ->
-                        a.getPosition().getX() == actualPosition.getX()
+                if (allies.stream().anyMatch(
+                        a -> a.isAlive() && a.getPosition().getX() == actualPosition.getX()
                                 && a.getPosition().getY() == actualPosition.getY())) {
                     return true;
                 }
 
-                if (enemies.stream().anyMatch(a ->
-                        a.getPosition().getX() == actualPosition.getX()
-                                && a.getPosition().getY() == actualPosition.getY())) {
+                if (enemies.stream().anyMatch(
+                        e -> e.isAlive() && e.getPosition().getX() == actualPosition.getX()
+                                && e.getPosition().getY() == actualPosition.getY())) {
                     return true;
                 }
             }

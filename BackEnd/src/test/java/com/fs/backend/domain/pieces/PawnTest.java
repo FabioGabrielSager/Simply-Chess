@@ -108,12 +108,35 @@ public class PawnTest {
 
     }
 
+    @SneakyThrows
+    @Test
+    @Tag("moveMethod")
+    @DisplayName("Not moved piece - Two steps movement")
+    public void moveTest3() {
+        blackPawn.setPosition(new Pair(1, 7));
+        whitePawn.setPosition(new Pair(1, 2));
+        blackPawn.setWasMoved(false);
+        whitePawn.setWasMoved(false);
+        Pair blackPieceMove = new Pair(1, 5);
+        Pair whitePieceMove = new Pair(1, 4);
+
+        blackPawn.move(blackPieceMove, BOARD_LENGTH, List.of(), List.of());
+
+        assertEquals(blackPieceMove.getX(), blackPawn.getPosition().getX());
+        assertEquals(blackPieceMove.getY(), blackPawn.getPosition().getY());
+
+        whitePawn.move(whitePieceMove, BOARD_LENGTH, List.of(), List.of());
+
+        assertEquals(whitePieceMove.getX(), whitePawn.getPosition().getX());
+        assertEquals(whitePieceMove.getY(), whitePawn.getPosition().getY());
+    }
+
     // TODO: Study well what the @SneakyThrows annotation does
     @SneakyThrows
     @Test
     @Tag("moveMethod")
     @DisplayName("Move towards an empty space")
-    public void moveTest3() {
+    public void moveTest4() {
 
         Pair blackPieceMove = new Pair(4, 5);
         Pair whitePieceMove = new Pair(2, 3);
@@ -132,7 +155,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Attack on empty space")
-    public void moveTest4() {
+    public void moveTest5() {
 
         assertThrows(IllegalMovementException.class, () ->
                 blackPawn.move(new Pair(5, 5), BOARD_LENGTH, List.of(), List.of()));
@@ -151,7 +174,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Move a dead piece")
-    public void moveTest5() {
+    public void moveTest6() {
 
         blackPawn.setAlive(false);
         whitePawn.setAlive(false);
@@ -169,7 +192,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Movement towards the same position")
-    public void moveTest6() {
+    public void moveTest7() {
 
         assertThrows(SamePositionException.class, () ->
                 blackPawn.move(new Pair(4, 6), BOARD_LENGTH, List.of(), List.of())
@@ -184,7 +207,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Movement outside the boundaries of the board")
-    public void moveTest7() {
+    public void moveTest8() {
 
         blackPawn.setPosition(new Pair(4, 1));
         whitePawn.setPosition(new Pair(2, 8));
@@ -202,7 +225,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Movement towards an allied position")
-    public void moveTest8() {
+    public void moveTest9() {
         Pawn alliedPiece1 = Pawn.builder()
                 .position(new Pair(4, 5))
                 .build();
@@ -225,7 +248,7 @@ public class PawnTest {
     @Test
     @Tag("moveMethod")
     @DisplayName("Attack on enemy position")
-    public void moveTest9() {
+    public void moveTest10() {
         Pawn alliedPiece1 = Pawn.builder()
                 .position(new Pair(5, 5))
                 .build();

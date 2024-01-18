@@ -53,7 +53,7 @@ public class KingTest {
                 .isAlive(true)
                 .build();
 
-        allies = new ArrayList<Piece>(Arrays.asList(queenSideRook, kingSideRook)) ;
+        allies = new ArrayList<Piece>(Arrays.asList(queenSideRook, kingSideRook));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class KingTest {
     @DisplayName("Move towards an empty space")
     public void moveTest2() {
 
-        Pair movement = new Pair(3 ,5);
+        Pair movement = new Pair(3, 5);
 
         king.move(movement, BOARD_LENGTH, allies, List.of());
 
@@ -98,7 +98,7 @@ public class KingTest {
         assertEquals(movement.getY(), king.getPosition().getY());
 
         setVariables();
-        movement = new Pair(4 ,5);
+        movement = new Pair(4, 5);
 
         king.move(movement, BOARD_LENGTH, allies, List.of());
 
@@ -106,7 +106,7 @@ public class KingTest {
         assertEquals(movement.getY(), king.getPosition().getY());
 
         setVariables();
-        movement = new Pair(5 ,5);
+        movement = new Pair(5, 5);
 
         king.move(movement, BOARD_LENGTH, allies, List.of());
 
@@ -331,4 +331,58 @@ public class KingTest {
         assertEquals(8, king.getPosition().getY());
     }
 
+    @Test
+    @Tag("isCheckmate")
+    @DisplayName("There is check mate")
+    public void isCheckmateTest1() {
+        king.setPosition(new Pair(8, 8));
+        kingSideRook.setPosition(new Pair(1, 1));
+        List<Piece> enemies = Arrays.asList(
+                Rook.builder()
+                        .position(new Pair(5, 8))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build(),
+                Rook.builder()
+                        .position(new Pair(8, 4))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build(),
+                Bishop.builder()
+                        .position(new Pair(5, 5))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build()
+                );
+
+        assertTrue(king.isCheckmate(BOARD_LENGTH, allies, enemies));
+    }
+
+
+    @Test
+    @Tag("isCheckmate")
+    @DisplayName("There is no check mate")
+    public void isCheckmateTest2() {
+        king.setPosition(new Pair(8, 8));
+        kingSideRook.setPosition(new Pair(1, 1));
+        List<Piece> enemies = Arrays.asList(
+                Rook.builder()
+                        .position(new Pair(5, 7))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build(),
+                Rook.builder()
+                        .position(new Pair(8, 4))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build(),
+                Bishop.builder()
+                        .position(new Pair(5, 5))
+                        .color(PieceColor.WHITE)
+                        .isAlive(true)
+                        .build()
+        );
+
+        assertFalse(king.isCheckmate(BOARD_LENGTH, allies, enemies));
+    }
 }
