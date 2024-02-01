@@ -4,7 +4,7 @@ import com.fs.backend.domain.pieces.Knight;
 import com.fs.backend.domain.pieces.Pawn;
 import com.fs.backend.domain.pieces.common.Pair;
 import com.fs.backend.domain.pieces.common.Piece;
-import com.fs.backend.exceptions.FinishedGameException;
+import com.fs.backend.exceptions.GameException;
 import com.fs.backend.exceptions.IllegalMovementException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,11 +59,11 @@ public class MatchTest {
     public void moveTest2() {
         Match newMatch = new Match("", "");
         newMatch.setWhiteTurn(false);
-        newMatch.setFinished(true);
+        newMatch.setStatus(MatchStatus.FINISHED);
         Optional<Piece> pieceToMove = newMatch.getBlackPieces().stream().filter(p -> p instanceof Pawn &&
                 p.getPosition().getX() == 1).findFirst();
 
-        assertThrows(FinishedGameException.class, () -> {
+        assertThrows(GameException.class, () -> {
                     if(pieceToMove.isPresent())
                         newMatch.move(pieceToMove.get(), new Pair(1, 6));
                 }
@@ -99,7 +100,7 @@ public class MatchTest {
         newMatch.verifyCheckmate();
 
         assertNull(newMatch.getWinner());
-        assertFalse(newMatch.isFinished());
+        assertNotEquals(MatchStatus.FINISHED, newMatch.getStatus());
     }
 
     @Test
@@ -117,7 +118,8 @@ public class MatchTest {
 
         assertNotNull(newMatch.getWinner());
         assertEquals(newMatch.getBlackPlayer(), newMatch.getWinner());
-        assertTrue(newMatch.isFinished());
+        assertEquals(MatchStatus.FINISHED, newMatch.getStatus());
+
     }
 
     @Test
@@ -135,6 +137,6 @@ public class MatchTest {
 
         assertNotNull(newMatch.getWinner());
         assertEquals(newMatch.getWhitePlayer(), newMatch.getWinner());
-        assertTrue(newMatch.isFinished());
+        assertEquals(MatchStatus.FINISHED, newMatch.getStatus());
     }
 }

@@ -87,22 +87,31 @@ public class King extends Piece {
         }
     }
 
-    public boolean isCheckmate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
-
-        List<Pair> availableSquares = getKingPosiblesMoves(boardLegnth, allies);
-        int attackedSquaresAmount = 0;
-        boolean isUnderAttack = false;
-
+    public boolean isUnderAttack(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
         for(Piece e : enemies) {
             try {
-                if(!isUnderAttack && e.isValidAttack(this.position,
+                if( e.isValidAttack(this.position,
                         enemies.stream().filter(ae -> !ae.equals(e)).toList(), allies)) {
-                    isUnderAttack = true;
-                    break;
+                    return true;
                 }
             } catch (PieceBlockingException ignored) {
             }
         }
+
+        return false;
+    }
+
+    public boolean isStaleMate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+        return areAllPossileMovesAttacked(boardLegnth, allies, enemies) && isUnderAttack(boardLegnth, allies, enemies);
+    }
+
+    public boolean isCheckmate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+        return areAllPossileMovesAttacked(boardLegnth, allies, enemies) && isUnderAttack(boardLegnth, allies, enemies);
+    }
+
+    private boolean areAllPossileMovesAttacked(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+        List<Pair> availableSquares = getKingPossibleMoves(boardLegnth, allies);
+        int attackedSquaresAmount = 0;
 
         for (Pair pm: availableSquares) {
             for (Piece e : enemies) {
@@ -115,10 +124,10 @@ public class King extends Piece {
             }
         }
 
-        return attackedSquaresAmount == availableSquares.size() && isUnderAttack;
+        return attackedSquaresAmount == availableSquares.size();
     }
 
-    private List<Pair> getKingPosiblesMoves(int boardLegnth, List<Piece> allies) {
+    private List<Pair> getKingPossibleMoves(int boardLegnth, List<Piece> allies) {
         List<Pair> posiblesMoves = new ArrayList<>();
 
         for (int x = -1; x <= 1; x++) {

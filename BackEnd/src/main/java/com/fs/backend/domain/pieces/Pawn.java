@@ -69,6 +69,11 @@ public class Pawn extends Piece {
         return !isMoveToSamePosition(target) && isLegalMove(target);
     }
 
+    public boolean isPromoted(int boardLengh) {
+        return this.color.equals(PieceColor.WHITE) && this.position.getY() == boardLengh
+                || this.color.equals(PieceColor.BLACK) && this.position.getY() == 1;
+    }
+
     public boolean wasMoved() {
         return wasMoved;
     }
