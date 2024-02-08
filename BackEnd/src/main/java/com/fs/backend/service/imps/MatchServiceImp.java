@@ -1,15 +1,17 @@
 package com.fs.backend.service.imps;
 
-import com.fs.backend.domain.Match;
-import com.fs.backend.domain.MatchStatus;
-import com.fs.backend.domain.Player;
-import com.fs.backend.domain.pieces.Pawn;
-import com.fs.backend.domain.pieces.PieceFactory;
-import com.fs.backend.domain.pieces.common.Pair;
-import com.fs.backend.domain.pieces.common.Piece;
-import com.fs.backend.domain.pieces.common.PieceColor;
+import com.fs.backend.dtos.PlayerInQueueResponse;
+import com.fs.backend.entities.PlayerInQueueEntity;
+import com.fs.backend.events.PlayerEnqueuedEvent;
+import com.fs.backend.model.Match;
+import com.fs.backend.model.MatchStatus;
+import com.fs.backend.model.Player;
+import com.fs.backend.model.pieces.Pawn;
+import com.fs.backend.model.pieces.PieceFactory;
+import com.fs.backend.model.pieces.common.Pair;
+import com.fs.backend.model.pieces.common.Piece;
+import com.fs.backend.model.pieces.common.PieceColor;
 import com.fs.backend.dtos.MatchDto;
-import com.fs.backend.dtos.NewMatchInfoDto;
 import com.fs.backend.dtos.PieceRequest;
 import com.fs.backend.entities.MatchEntity;
 import com.fs.backend.entities.PlayerEntity;
@@ -17,54 +19,48 @@ import com.fs.backend.exceptions.GameException;
 import com.fs.backend.exceptions.IllegalMovementException;
 import com.fs.backend.exceptions.PieceNotFoundException;
 import com.fs.backend.repositories.MatchRepository;
+import com.fs.backend.repositories.MatchQueueRepository;
 import com.fs.backend.service.MatchService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Service;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-public class MatchServiceImp implements MatchService {
+@AllArgsConstructor
+@Setter
+public class MatchServiceImp implements MatchService, ApplicationEventPublisherAware {
 
-    // TODO: ESTO VA PARA EL SERVICE DEL FRONTEND
-    private final HashMap<Character, Integer> COL_BY_ALGEBRAIC_SYMBOL = new HashMap<>(
-            Map.ofEntries(
-                    new AbstractMap.SimpleImmutableEntry<>('a', 1),
-                    new AbstractMap.SimpleImmutableEntry<>('b', 2),
-                    new AbstractMap.SimpleImmutableEntry<>('c', 3),
-                    new AbstractMap.SimpleImmutableEntry<>('d', 4),
-                    new AbstractMap.SimpleImmutableEntry<>('e', 5),
-                    new AbstractMap.SimpleImmutableEntry<>('f', 6),
-                    new AbstractMap.SimpleImmutableEntry<>('g', 7),
-                    new AbstractMap.SimpleImmutableEntry<>('h', 8)
-            ));
-
-    private final MatchRepository matchRepository;
-    private final ModelMapper modelMapper;
+    private MatchRepository matchRepository;
+    private MatchQueueRepository matchQueueRepository;
+    private ModelMapper modelMapper;
+    private ApplicationEventPublisher publisher;
 
     @Override
     public MatchDto createMatch(Player player) {
         Match match = new Match(player);
 
         MatchEntity matchEntity = modelMapper.map(match, MatchEntity.class);
-        matchEntity.setId(UUID.randomUUID().toString());
 
         matchEntity = matchRepository.save(matchEntity);
 
-        return modelMapper.map(matchEntity, MatchDto.class);
+        MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
+
+        return matchDto;
     }
 
     @Override
-    public MatchDto connectMatchById(Player player2, String matchId) {
+    public MatchDto connectMatchById(Player player2, UUID matchId) {
         Optional<MatchEntity> matchEntityOptional = matchRepository.findById(matchId);
 
         if (matchEntityOptional.isEmpty()) {
@@ -91,49 +87,71 @@ public class MatchServiceImp implements MatchService {
     }
 
     @Override
-    public MatchDto connectRandomMatch(Player player2) {
-        Optional<MatchEntity> newMatchOptional = matchRepository.findFirstByStatus(MatchStatus.NEW);
+    public PlayerInQueueResponse enqueueForMatch(Player player) {
+        PlayerInQueueEntity playerInQueueEntity = new PlayerInQueueEntity();
 
-        if (newMatchOptional.isEmpty()) {
-            throw new EntityNotFoundException("There is no available game right now");
-        }
+        playerInQueueEntity.setPlayer(modelMapper.map(player, PlayerEntity.class));
 
-        MatchEntity match = newMatchOptional.get();
+        Optional<Integer> matchPositionOptional = matchQueueRepository.getLastPosition();
 
-        if (Objects.isNull(match.getWhitePlayer())) {
-            match.setWhitePlayer(modelMapper.map(player2, PlayerEntity.class));
+        if(matchPositionOptional.isPresent()) {
+            playerInQueueEntity.setPosition(matchPositionOptional.get());
         } else {
-            match.setBlackPlayer(modelMapper.map(player2, PlayerEntity.class));
+            playerInQueueEntity.setPosition(1);
         }
 
-        match.setStatus(MatchStatus.IN_PROGRESS);
+        playerInQueueEntity = matchQueueRepository.save(playerInQueueEntity);
+        publisher.publishEvent(new PlayerEnqueuedEvent(this, playerInQueueEntity));
 
-        return modelMapper.map(matchRepository.save(match), MatchDto.class);
+        return modelMapper.map(playerInQueueEntity, PlayerInQueueResponse.class);
     }
 
     @Override
-    public List<NewMatchInfoDto> getAllNewMatchesIds() {
-        return matchRepository.findAllByStatus(MatchStatus.NEW).stream().map(m ->
-                new NewMatchInfoDto(m.getId(),
-                        modelMapper.map(m.getWhitePlayer() == null ? m.getBlackPlayer() : m.getWhitePlayer(),
-                                Player.class))).toList();
-    }
-
-    @Override
-    public MatchDto move(String matchId, PieceRequest pieceToMove, Pair target)
+    public MatchDto move(Player player, UUID matchId, PieceRequest pieceToMove, Pair target)
             throws IllegalMovementException, PieceNotFoundException {
 
         Match match = findMatchById(matchId);
-        Piece piece = pieceToMove.color() == PieceColor.BLACK ?
+
+        if (match.getStatus().equals(MatchStatus.FINISHED) || match.getStatus().equals(MatchStatus.TIED)) {
+            throw new GameException("Cannot make a move in a finished game");
+        }
+
+        if (match.getStatus().equals(MatchStatus.NEW)) {
+            throw new GameException("A move cannot be made until another player is connected");
+        }
+
+        List<Piece> piecesInThatPosition = pieceToMove.color() == PieceColor.BLACK ?
                 match.getBlackPieces().stream().filter(p ->
-                                p.getPosition().getX() == pieceToMove.position().getX()
-                                        && p.getPosition().getY() == pieceToMove.position().getY()).findFirst()
-                        .orElseThrow(() -> new PieceNotFoundException("There is no piece in that position"))
+                        p.getPosition().getX() == pieceToMove.position().getX()
+                                && p.getPosition().getY() == pieceToMove.position().getY()).toList()
                 :
                 match.getWhitePieces().stream().filter(p ->
-                                p.getPosition().getX() == pieceToMove.position().getX()
-                                        && p.getPosition().getY() == pieceToMove.position().getY()).findFirst()
-                        .orElseThrow(() -> new PieceNotFoundException("There is no piece in that position"));
+                        p.getPosition().getX() == pieceToMove.position().getX()
+                                && p.getPosition().getY() == pieceToMove.position().getY()).toList();
+
+        if (piecesInThatPosition.isEmpty()) {
+            throw new PieceNotFoundException("There is no piece in that position");
+        }
+
+        Piece piece = piecesInThatPosition.stream().filter(p -> p.isAlive() == true).findFirst().orElseThrow(() ->
+                new PieceNotFoundException("There is no piece in that position"));
+
+        if(match.isWhiteTurn()) {
+            if (player.getId() != match.getWhitePlayer().getId()) {
+                throw new IllegalMovementException("You cannot move in white's turn");
+            }
+            else if(piece.getColor().equals(PieceColor.BLACK)) {
+                throw new IllegalMovementException("You can't move a black piece");
+            }
+        }
+        else {
+            if (player.getId() != match.getBlackPlayer().getId()) {
+                throw new IllegalMovementException("You cannot move in black's turn");
+            }
+            else if(piece.getColor().equals(PieceColor.WHITE)) {
+                throw new IllegalMovementException("You can't move a white piece");
+            }
+        }
 
         match.move(piece, target);
 
@@ -150,7 +168,7 @@ public class MatchServiceImp implements MatchService {
     }
 
     @Override
-    public MatchDto promoteAPawn(String matchId, PieceRequest promotedPawn, char newPieceSymbol)
+    public MatchDto promoteAPawn(Player player, UUID matchId, PieceRequest promotedPawn, char newPieceSymbol)
             throws IllegalMovementException, PieceNotFoundException {
 
         Match match = findMatchById(matchId);
@@ -169,6 +187,14 @@ public class MatchServiceImp implements MatchService {
 
         Piece newPiece = PieceFactory.create(Character.toUpperCase(newPieceSymbol), promotedPawn.color());
 
+        if(player.getId() == match.getWhitePlayer().getId() && piece.getColor().equals(PieceColor.BLACK)) {
+            throw new IllegalMovementException("You can't promote a black piece");
+        }
+
+        if(player.getId() == match.getBlackPlayer().getId() && piece.getColor().equals(PieceColor.WHITE)) {
+            throw new IllegalMovementException("You can't promote a white piece");
+        }
+
         match.promoteAPawn(piece, newPiece);
 
         MatchEntity savedMatch = matchRepository.save(modelMapper.map(match, MatchEntity.class));
@@ -177,7 +203,7 @@ public class MatchServiceImp implements MatchService {
     }
 
     @Override
-    public MatchDto setMatchAsTied(String matchId) {
+    public MatchDto setMatchAsTied(UUID matchId) {
         Match match = findMatchById(matchId);
         match.setStatus(MatchStatus.TIED);
         MatchEntity savedMatch = matchRepository.save(modelMapper.map(match, MatchEntity.class));
@@ -185,7 +211,7 @@ public class MatchServiceImp implements MatchService {
         return modelMapper.map(savedMatch, MatchDto.class);
     }
 
-    private Match findMatchById(String matchId) {
+    private Match findMatchById(UUID matchId) {
         Optional<MatchEntity> matchEntityOptional = matchRepository.findById(matchId);
 
         if (matchEntityOptional.isEmpty()) {
@@ -193,5 +219,10 @@ public class MatchServiceImp implements MatchService {
         }
 
         return modelMapper.map(matchEntityOptional.get(), Match.class);
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.publisher = applicationEventPublisher;
     }
 }

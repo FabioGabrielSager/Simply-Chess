@@ -5,8 +5,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,19 +15,21 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-@Entity
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "players")
+@AllArgsConstructor
+@Entity
 @Getter @Setter
+@Builder
 @Generated
-public class PlayerEntity {
+public class PlayerInQueueEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID queueId;
 
-    @Column
-    private String name;
+    @Column(unique = true)
+    private int position;
 
+    @OneToOne
+    private PlayerEntity player;
 }

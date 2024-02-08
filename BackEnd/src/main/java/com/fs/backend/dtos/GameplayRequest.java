@@ -1,11 +1,15 @@
 package com.fs.backend.dtos;
 
-import com.fs.backend.domain.pieces.common.Pair;
-import lombok.Data;
+import com.fs.backend.model.Player;
+import com.fs.backend.model.pieces.common.Pair;
+import lombok.Generated;
+import lombok.Getter;
 
-@Data
+@Getter
+@Generated
 public class GameplayRequest {
     private String matchId;
-    PieceRequest pieceToMove;
-    Pair target;
+    private Player player;
+    private PieceRequest pieceToMove;
+    private Pair target;
 }

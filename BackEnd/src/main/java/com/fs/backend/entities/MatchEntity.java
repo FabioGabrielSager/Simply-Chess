@@ -1,23 +1,27 @@
 package com.fs.backend.entities;
 
-import com.fs.backend.domain.MatchStatus;
+import com.fs.backend.model.MatchStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "matches")
 @Getter @Setter
+@Generated
 public class MatchEntity {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     private MatchStatus status;

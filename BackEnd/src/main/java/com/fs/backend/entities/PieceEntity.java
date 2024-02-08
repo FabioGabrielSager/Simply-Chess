@@ -1,6 +1,6 @@
 package com.fs.backend.entities;
 
-import com.fs.backend.domain.pieces.common.PieceColor;
+import com.fs.backend.model.pieces.common.PieceColor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Builder
 @Table(name = "pieces")
 @Getter @Setter
+@Generated
 public class PieceEntity {
 
     @Id

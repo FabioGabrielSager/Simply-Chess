@@ -2,19 +2,21 @@ package com.fs.backend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fs.backend.domain.Match;
-import com.fs.backend.domain.Player;
-import com.fs.backend.domain.pieces.Bishop;
-import com.fs.backend.domain.pieces.King;
-import com.fs.backend.domain.pieces.Knight;
-import com.fs.backend.domain.pieces.Pawn;
-import com.fs.backend.domain.pieces.PieceFactory;
-import com.fs.backend.domain.pieces.Queen;
-import com.fs.backend.domain.pieces.Rook;
-import com.fs.backend.domain.pieces.common.Pair;
-import com.fs.backend.domain.pieces.common.Piece;
+import com.fs.backend.dtos.MatchDto;
 import com.fs.backend.entities.MatchEntity;
 import com.fs.backend.entities.PieceEntity;
+import com.fs.backend.entities.PlayerEntity;
+import com.fs.backend.model.Match;
+import com.fs.backend.model.MatchStatus;
+import com.fs.backend.model.pieces.Bishop;
+import com.fs.backend.model.pieces.King;
+import com.fs.backend.model.pieces.Knight;
+import com.fs.backend.model.pieces.Pawn;
+import com.fs.backend.model.pieces.PieceFactory;
+import com.fs.backend.model.pieces.Queen;
+import com.fs.backend.model.pieces.Rook;
+import com.fs.backend.model.pieces.common.Pair;
+import com.fs.backend.model.pieces.common.Piece;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -22,9 +24,7 @@ import org.modelmapper.TypeMap;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Configuration
 public class MappersConfig {
@@ -128,11 +128,39 @@ public class MappersConfig {
                                 source.getColor(),
                                 new Pair(source.getX(), source.getY()));
                         piece.setId(source.getId());
+                        piece.setAlive(source.isAlive());
                         return piece;
                     }
                 };
 
+        AbstractConverter<Match, MatchDto> matchMatchDtoAbstractConverter = new
+                AbstractConverter<Match, MatchDto>() {
+            @Override
+            protected MatchDto convert(Match source) {
+                return MatchDto.builder()
+                        .id(source.getId())
+                        .status(source.getStatus())
+                        .isWhiteTurn(source.isWhiteTurn())
+                        .whitePieces(source.getWhitePieces())
+                        .blackPieces(source.getBlackPieces())
+                        .blackPlayer(source.getBlackPlayer().getName())
+                        .whitePlayer(source.getWhitePlayer().getName())
+                        .winner(source.getWinner().getName())
+                        .build();
+            }
+        };
+
+        AbstractConverter<PlayerEntity, String> playerEntityStringAbstractConverter = new
+                AbstractConverter<PlayerEntity, String>() {
+                    @Override
+                    protected String convert(PlayerEntity source) {
+                        return Objects.isNull(source) ? null : source.getName();
+                    }
+                };
+
         mapper.addConverter(pieceEntityPieceAbstractConverter);
+        mapper.addConverter(matchMatchDtoAbstractConverter);
+        mapper.addConverter(playerEntityStringAbstractConverter);
 
         return mapper;
     }
