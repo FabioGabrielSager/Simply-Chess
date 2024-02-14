@@ -4,3 +4,8 @@
   --font-color: #ffc47a;
   --main-border-color: #A3150B;
 }
+
+.modal-content {
+  background-color: transparent;
+}
+

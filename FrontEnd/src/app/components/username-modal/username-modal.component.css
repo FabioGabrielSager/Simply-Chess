@@ -1,7 +1,6 @@
 .modal-container {
   background-color: var(--background);
   color: var(--font-color);
-  /*TODO: Fix the white corners that appears when applies a border radius*/
   border-radius: 20px;
 }
 
