@@ -1,0 +1,24 @@
+.menu {
+  padding: 10px;
+  border: 2px solid var(--main-border-color);
+  border-radius: 20px;
+}
+
+.btn {
+  background-color: #4E2C0B;
+  color: var(--font-color);
+  border-radius: 10px;
+}
+
+.btn:hover {
+  transform: scale(1.01);
+}
+
+.menu-container {
+  background: var(--background);
+}
+
+a img {
+  width: 30px;
+  height: 30px;
+}

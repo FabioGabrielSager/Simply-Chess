@@ -1,0 +1,23 @@
+<div class="modal-container">
+  <div class="modal-header border-0">
+    <button type="button" tabindex="-1" class="btn-close btn-close-white" (click)="modal.close('cross click')"
+            aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <form #form="ngForm">
+      <div class="mb-3">
+        <label for="username" class="form-label">Nombre: </label>
+        <input id="username" name="username" #client="ngModel" [(ngModel)]="username" type="text"
+               class="form-control bg-transparent text-white" required
+               [class.is-invalid]="client.invalid && client.dirty">
+        <div class="invalid-feedback" *ngIf="client.hasError('required') && client.dirty">
+          Debe ingresar un nombre de jugador.
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" class="btn" (click)="login(form)">Ingresar</button>
+  </div>
+</div>
+

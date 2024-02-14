@@ -1,0 +1,26 @@
+<div class="board">
+  <ng-container *ngFor="let col of columns; first as fc; last as lc">
+    <div class="indexes" *ngIf="fc"></div>
+    <div class="indexes">{{col}}</div>
+    <div class="indexes" *ngIf="lc"></div>
+  </ng-container>
+
+  <ng-container *ngFor="let row of rows.reverse();">
+    <ng-container *ngFor="let col of columns; first as fc; last as lc; index as ci">
+
+      <div *ngIf="fc" class="indexes"><span>{{row}}</span></div>
+      <div class="board-square"
+           [ngClass]="{'white-board-square': (row + ci+1) % 2 == 1,
+           'black-board-square': (row + ci+1) % 2 == 0}"><span style="z-index: 1;">{{row}}{{col}}</span></div>
+      <div *ngIf="lc" class="indexes">{{row}}</div>
+
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngFor="let col of columns; first as fc; last as lc">
+    <div class="indexes" *ngIf="fc"></div>
+    <div class="indexes">{{col}}</div>
+    <div class="indexes" *ngIf="lc"></div>
+  </ng-container>
+
+</div>
