@@ -9,9 +9,7 @@
   border: solid var(--font-color) 1px;
 }
 
-.btn:focus {
-  background-color: rgba(128, 128, 128, 0.22);
-}
+.btn:focus,
 .btn:hover {
   background-color: rgba(128, 128, 128, 0.22);
 }

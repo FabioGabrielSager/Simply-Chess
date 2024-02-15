@@ -12,12 +12,9 @@
   padding-bottom: 3rem;
 }
 
-.btn:hover {
+.btn:hover,
+.btn:focus {
   transform: scale(1.01);
-}
-
-.menu-container {
-  background: var(--background);
 }
 
 a img {

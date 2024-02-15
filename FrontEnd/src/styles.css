@@ -5,6 +5,10 @@
   --main-border-color: #A3150B;
 }
 
+body {
+  background-color: #261F22;
+}
+
 .modal-content {
   background-color: transparent;
 }

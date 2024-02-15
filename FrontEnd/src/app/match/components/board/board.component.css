@@ -14,6 +14,7 @@
   background-color: #241106;
   text-align: center;
   border: 1px solid var(--main-border-color);
+  user-select: none;
 }
 
 .white-board-square,

@@ -16,4 +16,10 @@ export class MatchMenuComponent {
     this.sessionService.logOut();
     this.router.navigate(['/home'])
   }
+
+  searchMatch() {
+    // TODO: IMPLEMENT LOGIC TO ENTER ON THE MATCH QUEUE
+
+    this.router.navigate(['/match/queue'])
+  }
 }
