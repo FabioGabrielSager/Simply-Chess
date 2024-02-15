@@ -8,6 +8,8 @@
   background-color: #4E2C0B;
   color: var(--font-color);
   border-radius: 10px;
+  padding-top: 3rem ;
+  padding-bottom: 3rem ;
 }
 
 .btn:hover {
@@ -22,3 +24,4 @@ a img {
   width: 30px;
   height: 30px;
 }
+

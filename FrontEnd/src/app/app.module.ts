@@ -7,6 +7,7 @@ import { MenuComponent } from './components/menu/menu.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { UsernameModalComponent } from './components/username-modal/username-modal.component';
 import {FormsModule} from "@angular/forms";
+import {ToastContainerComponent} from "./components/toast-container/toast-container.component";
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import {FormsModule} from "@angular/forms";
         BrowserModule,
         AppRoutingModule,
         NgbModule,
-        FormsModule
+        FormsModule,
+        ToastContainerComponent
     ],
   providers: [],
   bootstrap: [AppComponent]

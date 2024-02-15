@@ -1,1 +1,14 @@
-<p>match-menu works!</p>
+<div class="container-fluid vh-100 d-flex justify-content-center align-items-center menu-container">
+  <div class="row menu pt-3 pb-3 row-gap-3 m-3">
+    <div class="col-12">
+      <button class="btn w-100 h-100">Buscar partida</button>
+    </div>
+    <div class="col-12">
+      <button class="btn w-100 h-100">Crear partida privada</button>
+    </div>
+    <div class="col-12">
+      <button class="btn w-100 h-100" (click)="logOut()">Salir</button>
+    </div>
+  </div>
+  <span id="username" class="me-1">username: {{username}}</span>
+</div>

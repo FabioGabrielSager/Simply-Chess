@@ -25,4 +25,10 @@ export class UsernameModalComponent{
     this.modal.close();
     this.router.navigate(["match"]);
   }
+
+  onKeyDown(key: any, form: NgForm) {
+    if(key.key == 'Enter') {
+      this.login(form)
+    }
+  }
 }

@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
+import {Router} from "@angular/router";
+import {SessionService} from "../../../services/session.service";
 
 @Component({
   selector: 'app-match-menu',
@@ -6,5 +8,12 @@ import { Component } from '@angular/core';
   styleUrls: ['./match-menu.component.css']
 })
 export class MatchMenuComponent {
+  private sessionService: SessionService = inject(SessionService);
+  private router: Router = inject(Router);
+  username: string = this.sessionService.getUserName();
 
+  logOut() {
+    this.sessionService.logOut();
+    this.router.navigate(['/home'])
+  }
 }

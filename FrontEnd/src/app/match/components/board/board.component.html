@@ -11,7 +11,7 @@
       <div *ngIf="fc" class="indexes"><span>{{row}}</span></div>
       <div class="board-square"
            [ngClass]="{'white-board-square': (row + ci+1) % 2 == 1,
-           'black-board-square': (row + ci+1) % 2 == 0}"><span style="z-index: 1;">{{row}}{{col}}</span></div>
+           'black-board-square': (row + ci+1) % 2 == 0}"></div>
       <div *ngIf="lc" class="indexes">{{row}}</div>
 
     </ng-container>

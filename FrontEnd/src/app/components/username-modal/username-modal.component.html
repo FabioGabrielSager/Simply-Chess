@@ -7,7 +7,7 @@
     <form #form="ngForm">
       <div class="mb-3">
         <label for="username" class="form-label">Nombre: </label>
-        <input id="username" name="username" #client="ngModel" [(ngModel)]="username" type="text"
+        <input id="username" name="username" (keydown)="onKeyDown($event, form)" #client="ngModel" [(ngModel)]="username" type="text"
                class="form-control bg-transparent text-white" required
                [class.is-invalid]="client.invalid && client.dirty">
         <div class="invalid-feedback" *ngIf="client.hasError('required') && client.dirty">
@@ -17,6 +17,6 @@
     </form>
   </div>
   <div class="modal-footer border-0">
-    <button type="button" class="btn" (click)="login(form)">Ingresar</button>
+    <button type="button" tabindex="0" class="btn" (click)="login(form)">Ingresar</button>
   </div>
 </div>
