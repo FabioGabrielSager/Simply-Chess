@@ -38,4 +38,12 @@ public class PlayerServiceImp implements PlayerService {
 
         playerRepository.delete(playerEntityOptional.get());
     }
+
+    @Override
+    public boolean playerExists(PlayerDto playerDto) {
+        Optional<PlayerEntity> playerEntityOptional = playerRepository
+                .findByIdAndName(playerDto.getId(), playerDto.getName());
+
+        return playerEntityOptional.isPresent();
+    }
 }

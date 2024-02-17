@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface PlayerService {
     PlayerDto addPlayer(PlayerDto player);
     void deletePlayer(UUID playerId);
+    boolean playerExists(PlayerDto playerDto);
 }
