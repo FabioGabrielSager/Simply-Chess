@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  matchapi:
+    image: "match_api:1.0.0"
+    build: ../../MatchAPI
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  playerapi:
+    image: "player_api:1.0.0"
+    build: ../../PlayerAPI
+    depends_on:
+      - db
+    ports:
+      - 8081:8080
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+
+  db:
+    image: postgres:15.4
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_USER=PRODDB
+      - POSTGRES_PASSWORD=PRODDB
+      - POSTGRES_DB=chess_db
+    volumes:
+      - chess_vol:/var/lib/postgres/chess-app-data
+
+volumes:
+  chess_vol:
