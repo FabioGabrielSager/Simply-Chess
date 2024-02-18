@@ -20,9 +20,7 @@ public class WebSocketEventListener {
     @EventListener
     public void hadleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        UUID playerId =
-                UUID.fromString((String)
-                        Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("playerId"));
+        UUID playerId = (UUID) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("playerId");
 
         playerRepository.deleteById(playerId);
     }

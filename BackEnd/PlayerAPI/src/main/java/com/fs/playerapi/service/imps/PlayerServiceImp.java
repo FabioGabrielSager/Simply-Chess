@@ -23,8 +23,9 @@ public class PlayerServiceImp implements PlayerService {
     private ModelMapper modelMapper;
 
     @Override
-    public PlayerDto addPlayer(PlayerDto player) {
-        PlayerEntity playerEntity = playerRepository.save(modelMapper.map(player, PlayerEntity.class));
+    public PlayerDto addPlayer(String playerName) {
+        PlayerEntity playerEntity = playerRepository.save(modelMapper.map(PlayerDto.builder().name(playerName).build(),
+                PlayerEntity.class));
         return modelMapper.map(playerEntity, PlayerDto.class);
     }
 

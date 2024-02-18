@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Service
 public interface PlayerService {
-    PlayerDto addPlayer(PlayerDto player);
+    PlayerDto addPlayer(String playerName);
     void deletePlayer(UUID playerId);
     boolean playerExists(PlayerDto playerDto);
 }
