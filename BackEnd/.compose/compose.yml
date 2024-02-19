@@ -3,7 +3,7 @@ version: "3.8"
 services:
   matchapi:
     image: "match_api:1.0.0"
-    build: ../../MatchAPI
+    build: ../MatchAPI
     depends_on:
       - db
     ports:
@@ -13,7 +13,7 @@ services:
 
   playerapi:
     image: "player_api:1.0.0"
-    build: ../../PlayerAPI
+    build: ../PlayerAPI
     depends_on:
       - db
     ports:

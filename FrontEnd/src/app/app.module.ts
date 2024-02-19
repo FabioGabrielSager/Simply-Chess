@@ -8,19 +8,23 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { UsernameModalComponent } from './components/username-modal/username-modal.component';
 import {FormsModule} from "@angular/forms";
 import {ToastContainerComponent} from "./components/toast-container/toast-container.component";
+import {HttpClientModule} from "@angular/common/http";
+import {ConnectingComponent} from "./components/connecting/connecting.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     MenuComponent,
     UsernameModalComponent,
+    ConnectingComponent
   ],
     imports: [
         BrowserModule,
         AppRoutingModule,
         NgbModule,
         FormsModule,
-        ToastContainerComponent
+        ToastContainerComponent,
+        HttpClientModule
     ],
   providers: [],
   bootstrap: [AppComponent]

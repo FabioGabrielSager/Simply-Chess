@@ -2,7 +2,7 @@ import {Component, inject} from '@angular/core';
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {SessionService} from "../../services/session.service";
 import {NgForm} from "@angular/forms";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-username-modal',
@@ -13,6 +13,7 @@ export class UsernameModalComponent{
   modal: NgbActiveModal = inject(NgbActiveModal);
   private sessionService: SessionService = inject(SessionService);
   private router: Router = inject(Router);
+  private route: ActivatedRoute = inject(ActivatedRoute);
   username: string = "";
 
   login(form: NgForm) {
@@ -23,7 +24,7 @@ export class UsernameModalComponent{
 
     this.sessionService.saveUser(this.username);
     this.modal.close();
-    this.router.navigate(["match"]);
+    this.router.navigate(["connecting"]);
   }
 
   onKeyDown(key: any, form: NgForm) {
