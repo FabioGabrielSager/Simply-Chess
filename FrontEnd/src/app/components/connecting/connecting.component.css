@@ -5,16 +5,3 @@ strong {
 .spinner-border {
   color: var(--font-color);
 }
-
-.btn {
-  color: var(--font-color);
-  border: solid var(--font-color) 1px;
-  width: 100%;
-}
-
-.btn:focus {
-  background-color: rgba(128, 128, 128, 0.22);
-}
-.btn:hover {
-  background-color: rgba(128, 128, 128, 0.22);
-}
