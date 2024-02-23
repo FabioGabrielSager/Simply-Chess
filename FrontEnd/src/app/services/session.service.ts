@@ -79,6 +79,7 @@ export class SessionService {
               observer.complete();
             },
             error: err => {
+              observer.error(err)
               this.toastService.show("Hubo un error al comprobar el estado de su sesión",
                 "bg-danger");
               console.log(err);
