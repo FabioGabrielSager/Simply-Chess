@@ -26,7 +26,7 @@ public class PlayerController {
     private PlayerService playerService;
 
     @MessageMapping("/add")
-    @SendToUser("/queue/reply")
+    @SendToUser(value = "/queue/reply", broadcast = false)
     public PlayerDto addPlayer(@Payload String player, SimpMessageHeaderAccessor headerAccessor) {
         PlayerDto response = playerService.addPlayer(player);
         Objects.requireNonNull(headerAccessor.getSessionAttributes()).put("playerId", response.getId());
