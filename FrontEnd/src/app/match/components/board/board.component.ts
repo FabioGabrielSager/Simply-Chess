@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChange, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange, SimpleChanges} from '@angular/core';
 import {Piece} from "../../../models/piece";
 import {Pair} from "../../../models/pair";
 import {PieceMovement} from "../../../models/piece-movement";
@@ -8,7 +8,7 @@ import {PieceMovement} from "../../../models/piece-movement";
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
-export class BoardComponent implements OnChanges {
+export class BoardComponent implements OnInit,OnChanges {
   rows: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
   columns: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   symbolToPieceIcon: Map<string, string> = new Map<string, string>([
@@ -26,9 +26,13 @@ export class BoardComponent implements OnChanges {
   selectedPiece: HTMLSpanElement | null = null;
 
   constructor() {
-    if(this.pieces?.at(0)?.color == "WHITE") {
-      this.rows = this.rows.reverse();
-    }
+
+  }
+
+  ngOnInit(): void {
+      if(this.pieces?.at(0)?.color == "WHITE") {
+        this.rows = this.rows.reverse();
+      }
   }
 
   // TODO: See if it is necessary to implement this to update the board state.

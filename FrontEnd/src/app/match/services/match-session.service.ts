@@ -20,6 +20,8 @@ export class MatchSessionService implements OnInit, OnDestroy {
   private sessionService: SessionService = inject(SessionService);
   private subs: Subscription = new Subscription();
   isConnectingSubject: Subject<boolean> = new Subject<boolean>();
+  rivalIsConnectedSubject: Subject<boolean> = new Subject<boolean>();
+  private rivalIsConnected: boolean = false;
   private _isConnecting: boolean = false;
   match: Match | null = null;
   playerTeamColor: string | undefined = undefined;
@@ -85,8 +87,15 @@ export class MatchSessionService implements OnInit, OnDestroy {
   }
 
   private onMatchUpdate(payload: any) {
+    if(!this.rivalIsConnected) {
+      this.rivalIsConnectedSubject.next(true);
+      this.rivalIsConnected = true;
+    }
+
     this.match = JSON.parse(payload.body) as Match;
   }
+
+  // TODO: ADD LOGIC TO UPDATE SESSION VALUES ON A MATCH DISCONNECTION.
 
   private setUpSocketConnection() {
     const url = "//localhost:8080/chess-match";

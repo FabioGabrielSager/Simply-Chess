@@ -29,11 +29,6 @@ app-board {
   color: var(--font-color);
 }
 
-.player-img::before {
-  content: "";
-  padding-top: 100%;
-}
-
 .timer {
   grid-area: timer;
   color: var(--font-color);
@@ -61,9 +56,9 @@ app-board {
   .match-container {
     grid-template:
     "timer" auto
-    "player" auto
-    "board" auto
     "rival-player" auto
+    "board" auto
+    "player" auto
     "matchId" auto
     /
     80%;
@@ -74,9 +69,9 @@ app-board {
   .match-container {
     grid-template:
     "timer" auto
-    "player" auto
-    "board" auto
     "rival-player" auto
+    "board" auto
+    "player" auto
     "matchId" auto /
     80%;
     font-size: 3vw;
@@ -87,9 +82,9 @@ app-board {
   .match-container {
     grid-template:
     "timer" auto
-    "player" auto
-    "board" auto
     "rival-player" auto
+    "board" auto
+    "player" auto
     "matchId" auto /
     80%;
     font-size: 2vw;
@@ -101,9 +96,9 @@ app-board {
   .match-container {
     grid-template:
     "timer" auto
-    "player" auto
-    "board" auto
     "rival-player" auto
+    "board" auto
+    "player" auto
     "matchId" auto /
     95%;
     font-size: 100%;
@@ -191,9 +186,9 @@ app-board {
   .match-container {
     grid-template:
     "timer" auto
-    "player" auto
-    "board" auto
     "rival-player" auto
+    "board" auto
+    "player" auto
     "matchId" auto /
     70vh;
   }

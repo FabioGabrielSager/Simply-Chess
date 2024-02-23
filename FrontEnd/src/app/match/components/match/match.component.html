@@ -1,18 +1,24 @@
 <div class="match-container">
   <div class="timer" id="timer">
-    <span class="minutes">00</span>:<span class="seconds">00</span>
+    <span class="minutes">@if(timer.minutes < 10) {<span>0</span>}{{ timer.minutes }}</span>:<span class="seconds">
+    @if(timer.seconds < 10) {<span>0</span>}{{ timer.seconds }}
+    </span>
   </div>
   <div class="rival-player">
-    <img class="player-img" src="../../../../favicon.ico" alt="player-image">
-    <span class="player-name">Player name</span>
+    <span class="player-name"
+          [ngClass]="{'bg-white text-dark': matchService.playerTeamColor == 'BLACK'}">
+      {{ rivalPlayerName }}
+    </span>
   </div>
   <app-board [pieces]="matchService.playerTeamColor == 'BLACK'
   ? matchService.match?.blackPieces : matchService.match?.whitePieces"
              [rivalPieces]="matchService.playerTeamColor == 'BLACK'
   ? matchService.match?.whitePieces : matchService.match?.blackPieces"></app-board>
   <div class="player">
-    <img class="player-img" src="../../../../favicon.ico" alt="player-image">
-    <span class="player-name">Player name</span>
+    <span class="player-name bg-black rounded-1 pe-5 ps-5"
+          [ngClass]="{'bg-white text-dark': matchService.playerTeamColor == 'WHITE'}">
+      {{ playerName }}
+    </span>
   </div>
   <div class="matchId">
     <span role="status">Match ID: {{ matchId }}</span>
