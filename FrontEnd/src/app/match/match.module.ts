@@ -9,10 +9,14 @@ import {ClipboardModule} from "ngx-clipboard";
 
 
 @NgModule({
-  declarations: [
+    declarations: [
+        BoardComponent,
+        MatchComponent,
+        MatchMenuComponent
+    ],
+  exports: [
     BoardComponent,
-    MatchComponent,
-    MatchMenuComponent
+    MatchComponent
   ],
     imports: [
         CommonModule,

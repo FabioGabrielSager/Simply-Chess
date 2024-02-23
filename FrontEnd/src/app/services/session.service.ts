@@ -1,18 +1,18 @@
 import {inject, Injectable, OnDestroy} from '@angular/core';
 import {User} from "../models/User";
 import {HttpClient} from "@angular/common/http";
-import {Observable, Subject, Subscription} from "rxjs";
+import {Observable, of, Subject, Subscription} from "rxjs";
 import {ToastService} from "./toast.service";
-import {Stomp} from "@stomp/stompjs";
 import * as SockJS from "sockjs-client";
+import {Stomp} from "@stomp/stompjs";
 
 @Injectable({
   providedIn: 'root'
 })
-export class SessionService implements OnDestroy {
+export class SessionService {
+
   private toastService: ToastService = inject(ToastService);
-  private subs: Subscription = new Subscription();
-  private user: User = new User();
+  private _user: User = new User();
 
   private httpClient: HttpClient = inject(HttpClient);
   private stompClient: any;
@@ -26,19 +26,19 @@ export class SessionService implements OnDestroy {
     return this._isConnecting;
   }
 
-  ngOnDestroy(): void {
-    this.subs.unsubscribe();
+  get user(): User {
+    return this._user;
   }
 
   saveUser(username: string) {
     this._isConnecting = true;
-    this.initSocketConnection();
+    this.setupSocketConnection();
 
     this.stompClient.connect({}, () => {
         this.stompClient.subscribe("/user/queue/reply", (payload: any) => {
           const user = JSON.parse(payload.body);
-          this.user.name = user.name;
-          this.user.id = user.id;
+          this._user.name = user.name;
+          this._user.id = user.id;
           this._isConnecting = false;
           this.isConnectingSubject.next(false);
         });
@@ -57,7 +57,7 @@ export class SessionService implements OnDestroy {
       });
   }
 
-  private initSocketConnection() {
+  private setupSocketConnection() {
     const url = "//localhost:8081/chess-player";
     const socket = new SockJS(url);
     this.stompClient = Stomp.over(socket);
@@ -65,17 +65,17 @@ export class SessionService implements OnDestroy {
 
   logOut() {
     this.stompClient.deactivate();
-    this.user.id = "";
-    this.user.name = "";
+    this._user.id = "";
+    this._user.name = "";
   }
 
   isLogged(): Observable<boolean> {
     return new Observable<boolean>((observer) => {
-      this.httpClient.get<boolean>(`http://localhost:8081/exists/?id=${this.user.id}&name=${this.user.name}`)
+      this.httpClient.get<boolean>(`http://localhost:8081/exists/?id=${this._user.id}&name=${this._user.name}`)
         .subscribe(
           {
             next: value => {
-              observer.next(this.user.id !== "" && this.user.name !== "" && this.stompClient.connected && value);
+              observer.next(this._user.id !== "" && this._user.name !== "" && this.stompClient.connected && value);
               observer.complete();
             },
             error: err => {
@@ -89,6 +89,6 @@ export class SessionService implements OnDestroy {
   }
 
   getUserName() {
-    return this.user.name;
+    return this._user.name;
   }
 }

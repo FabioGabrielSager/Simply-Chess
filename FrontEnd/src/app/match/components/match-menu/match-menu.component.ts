@@ -1,6 +1,7 @@
 import {Component, inject} from '@angular/core';
 import {Router} from "@angular/router";
 import {SessionService} from "../../../services/session.service";
+import {MatchSessionService} from "../../services/match-session.service";
 
 @Component({
   selector: 'app-match-menu',
@@ -9,6 +10,7 @@ import {SessionService} from "../../../services/session.service";
 })
 export class MatchMenuComponent {
   private sessionService: SessionService = inject(SessionService);
+  private matchService: MatchSessionService = inject(MatchSessionService);
   private router: Router = inject(Router);
   username: string = this.sessionService.getUserName();
 
@@ -21,5 +23,10 @@ export class MatchMenuComponent {
     // TODO: IMPLEMENT LOGIC TO ENTER ON THE MATCH QUEUE
 
     this.router.navigate(['/match/queue'])
+  }
+
+  createMatch() {
+    this.matchService.createMatch();
+    this.router.navigate(["creating-match"])
   }
 }

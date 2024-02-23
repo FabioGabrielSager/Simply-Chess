@@ -13,7 +13,6 @@
   color: var(--font-color);
   background-color: #241106;
   text-align: center;
-  border: 1px solid var(--main-border-color);
   user-select: none;
 }
 
@@ -40,11 +39,21 @@
 
 .white-board-square {
   background-color: #CF7D2E;
-  border: 1px solid var(--main-border-color);
 }
 
 .black-board-square {
   background-color: #4E2C0B;
-  border: 1px solid var(--main-border-color);
 }
 
+.piece {
+  font-size: 2.5em;
+}
+
+.piece:hover {
+  cursor: pointer;
+}
+
+.board-square:hover {
+  border: aqua solid 1px;
+  border-radius: 5%;
+}

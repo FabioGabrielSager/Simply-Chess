@@ -10,6 +10,7 @@ import {FormsModule} from "@angular/forms";
 import {ToastContainerComponent} from "./components/toast-container/toast-container.component";
 import {HttpClientModule} from "@angular/common/http";
 import {ConnectingComponent} from "./components/connecting/connecting.component";
+import {MatchModule} from "./match/match.module";
 
 @NgModule({
   declarations: [
@@ -18,14 +19,15 @@ import {ConnectingComponent} from "./components/connecting/connecting.component"
     UsernameModalComponent,
     ConnectingComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        NgbModule,
-        FormsModule,
-        ToastContainerComponent,
-        HttpClientModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    NgbModule,
+    FormsModule,
+    ToastContainerComponent,
+    HttpClientModule,
+    MatchModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })
