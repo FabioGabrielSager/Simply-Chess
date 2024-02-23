@@ -7,12 +7,14 @@ import {Observable, Subject, Subscription} from "rxjs";
 import {MatchWithPlayerTeam} from "../../models/match-with-player-team";
 import {Match} from "../../models/match";
 import {User} from "../../models/User";
+import {ToastService} from "../../services/toast.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class MatchSessionService implements OnInit, OnDestroy {
 
+  private toastService: ToastService = inject(ToastService);
   private httpClient: HttpClient = inject(HttpClient);
   private stompClient: any;
   private sessionService: SessionService = inject(SessionService);
@@ -23,7 +25,6 @@ export class MatchSessionService implements OnInit, OnDestroy {
   playerTeamColor: string | undefined = undefined;
 
   constructor() {
-    this.setUpSocketConnection();
   }
 
   ngOnInit(): void {
@@ -39,29 +40,34 @@ export class MatchSessionService implements OnInit, OnDestroy {
 
   createMatch(): void {
     this._isConnecting = true;
-    const user = {
-      id: "c8783778-4c6b-43c4-a057-82f3b31ee68a",
-      name: "Fabio"
-    } as User
-
     this.subs.add(
-      this.httpClient.post<MatchWithPlayerTeam>("http://localhost:8080/match/create", user)
+      this.httpClient.post<MatchWithPlayerTeam>("http://localhost:8080/match/create", this.sessionService.user)
         .subscribe(
           {
             next: value => {
-              this.match = value.match;
-              this.playerTeamColor = value.playerTeam;
-              this._isConnecting = false;
-              this.isConnectingSubject.next(false);
+              this.setUpSocketConnection();
               this.stompClient.connect({}, () => {
-                  this.stompClient.subscribe("/match/queue/game-progress/", (payload: any) => {
+                  this.stompClient.subscribe("/match/queue/game-progress/" + value.match.id, (payload: any) => {
                     this.onMatchUpdate(payload);
                   });
-                }
-              )
+                  this.match = value.match;
+                  this.playerTeamColor = value.playerTeam;
+                  this._isConnecting = false;
+                  this.isConnectingSubject.next(false);
+                  this.match = value.match;
+                },
+              (error: any) => {
+                this.toastService.show("Hubo un error al intentar conectarse, inténtelo mas tarde",
+                  "bg-danger");
+                console.log(error);
+              });
             },
             error: err => {
-              console.log("error", err);
+              this.toastService.show("Hubo un error al intentar crear la partida, inténtelo mas tarde",
+                "bg-danger");
+              console.log(err);
+              this.match = null;
+              this.playerTeamColor = undefined;
               this._isConnecting = false;
               this.isConnectingSubject.next(false);
             }
