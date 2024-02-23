@@ -1,0 +1,1 @@
+insert into players (id, name) values ( 'c8783778-4c6b-43c4-a057-82f3b31ee68a', 'USER' )

@@ -3,6 +3,7 @@ package com.fs.matchapi.service;
 import com.fs.matchapi.config.MappersConfig;
 import com.fs.matchapi.dtos.MatchDto;
 import com.fs.matchapi.dtos.PieceRequest;
+import com.fs.matchapi.dtos.PieceResponse;
 import com.fs.matchapi.dtos.PlayerInQueueResponse;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerEntity;
@@ -19,6 +20,7 @@ import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.model.pieces.common.PieceColor;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
+import com.fs.matchapi.repositories.PlayerRepository;
 import com.fs.matchapi.service.imps.MatchServiceImp;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +59,8 @@ import static org.mockito.Mockito.when;
 @Import(MappersConfig.class)
 public class MatchServiceTest {
     @Mock
+    private PlayerRepository playerRepository;
+    @Mock
     private MatchRepository matchRepository;
     @Mock
     private MatchQueueRepository matchQueueRepository;
@@ -79,6 +83,7 @@ public class MatchServiceTest {
         MatchEntity matchEntity = new MatchEntity();
 
         when(matchRepository.save(any())).thenReturn(matchEntity);
+        when(playerRepository.findById(any())).thenReturn(Optional.of(new PlayerEntity()));
 
         matchServiceImp.createMatch(new Player());
 
@@ -455,7 +460,7 @@ public class MatchServiceTest {
 
         verify(matchRepository, times(1)).save(any());
 
-        List<Piece> blackQueens = result.getBlackPieces().stream().filter(p -> p instanceof Queen).toList();
+        List<PieceResponse> blackQueens = result.getBlackPieces().stream().filter(p -> p.getType().equals('Q')).toList();
         assertEquals(2, blackQueens.size());
         assertTrue(blackQueens.stream().anyMatch(p -> p.getPosition().getX() == 3 && p.getPosition().getY() == 1));
     }
@@ -490,7 +495,7 @@ public class MatchServiceTest {
 
         verify(matchRepository, times(1)).save(any());
 
-        List<Piece> whiteQueens = result.getWhitePieces().stream().filter(p -> p instanceof Queen).toList();
+        List<PieceResponse> whiteQueens = result.getWhitePieces().stream().filter(p -> p.getType().equals('Q')).toList();
         assertEquals(2, whiteQueens.size());
         assertTrue(whiteQueens.stream().anyMatch(p -> p.getPosition().getX() == 3 && p.getPosition().getY() == 8));
     }

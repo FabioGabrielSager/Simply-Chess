@@ -1,6 +1,7 @@
 package com.fs.matchapi.events;
 
 import com.fs.matchapi.dtos.MatchDto;
+import com.fs.matchapi.dtos.MatchWithPlayerTeam;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
@@ -81,7 +82,7 @@ public class MatchQueueEventHandlingTest {
         eventListener.onApplicationEvent(event);
 
         verify(simpMessagingTemplate, times(2))
-                .convertAndSend(anyString(), isA(MatchDto.class));
+                .convertAndSend(anyString(), isA(MatchWithPlayerTeam.class));
         verify(matchRepository, times(1)).save(any());
         verify(matchQueueRepository, times(2)).deleteById(any());
     }

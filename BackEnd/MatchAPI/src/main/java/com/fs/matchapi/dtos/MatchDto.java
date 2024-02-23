@@ -20,8 +20,8 @@ public class MatchDto {
     private UUID id;
     private MatchStatus status;
     private boolean isWhiteTurn;
-    private List<Piece> whitePieces;
-    private List<Piece> blackPieces;
+    private List<PieceResponse> whitePieces;
+    private List<PieceResponse> blackPieces;
     private String whitePlayer;
     private String blackPlayer;
     private String winner;

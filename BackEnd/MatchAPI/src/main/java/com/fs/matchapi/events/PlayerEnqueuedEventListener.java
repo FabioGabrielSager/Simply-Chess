@@ -2,11 +2,13 @@ package com.fs.matchapi.events;
 
 
 import com.fs.matchapi.dtos.MatchDto;
+import com.fs.matchapi.dtos.MatchWithPlayerTeam;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.model.Match;
 import com.fs.matchapi.model.MatchStatus;
 import com.fs.matchapi.model.Player;
+import com.fs.matchapi.model.pieces.common.PieceColor;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
 import lombok.AllArgsConstructor;
@@ -35,27 +37,36 @@ public class PlayerEnqueuedEventListener implements ApplicationListener<PlayerEn
                 event.getPlayer().getPosition() - 1);
 
         if (playerInQueueEntityOptional.isPresent()) {
+            MatchWithPlayerTeam responseForHostPlayer = new MatchWithPlayerTeam();
+            MatchWithPlayerTeam responseForPlayer2 = new MatchWithPlayerTeam();
+
             Player hostPlayer = modelMapper.map(playerInQueueEntityOptional.get().getPlayer(), Player.class);
             MatchEntity matchEntity = modelMapper.map(new Match(hostPlayer),
                     MatchEntity.class);
 
             if (Objects.isNull(matchEntity.getWhitePlayer())) {
                 matchEntity.setWhitePlayer(event.getPlayer().getPlayer());
+                responseForHostPlayer.setPlayerTeam(PieceColor.BLACK);
+                responseForPlayer2.setPlayerTeam(PieceColor.WHITE);
             } else {
                 matchEntity.setBlackPlayer(event.getPlayer().getPlayer());
+                responseForHostPlayer.setPlayerTeam(PieceColor.WHITE);
+                responseForPlayer2.setPlayerTeam(PieceColor.BLACK);
             }
 
             matchEntity.setStatus(MatchStatus.IN_PROGRESS);
 
             matchEntity = matchRepository.save(matchEntity);
             MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
+            responseForHostPlayer.setMatch(matchDto);
+            responseForPlayer2.setMatch(matchDto);
 
             simpMessagingTemplate.convertAndSend(
                     "queue/game-queue/" + event.getPlayer().getQueueId(),
-                    matchDto);
+                    responseForPlayer2);
             simpMessagingTemplate.convertAndSend(
                     "queue/game-queue/" + playerInQueueEntityOptional.get().getQueueId(),
-                    matchDto);
+                    responseForHostPlayer);
 
             matchQueueRepository.deleteById(event.getPlayer().getQueueId());
             matchQueueRepository.deleteById(playerInQueueEntityOptional.get().getQueueId());

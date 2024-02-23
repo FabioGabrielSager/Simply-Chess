@@ -1,5 +1,6 @@
 package com.fs.matchapi.service.imps;
 
+import com.fs.matchapi.dtos.MatchWithPlayerTeam;
 import com.fs.matchapi.dtos.PlayerInQueueResponse;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.events.PlayerEnqueuedEvent;
@@ -20,6 +21,7 @@ import com.fs.matchapi.exceptions.IllegalMovementException;
 import com.fs.matchapi.exceptions.PieceNotFoundException;
 import com.fs.matchapi.repositories.MatchRepository;
 import com.fs.matchapi.repositories.MatchQueueRepository;
+import com.fs.matchapi.repositories.PlayerRepository;
 import com.fs.matchapi.service.MatchService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -39,27 +41,46 @@ import java.util.UUID;
 @Setter
 public class MatchServiceImp implements MatchService, ApplicationEventPublisherAware {
 
+    private PlayerRepository playerRepository;
     private MatchRepository matchRepository;
     private MatchQueueRepository matchQueueRepository;
     private ModelMapper modelMapper;
     private ApplicationEventPublisher publisher;
 
     @Override
-    public MatchDto createMatch(Player player) {
+    public MatchWithPlayerTeam createMatch(Player player) {
         Match match = new Match(player);
 
         MatchEntity matchEntity = modelMapper.map(match, MatchEntity.class);
+
+        if(player.getId() != null) {
+            Optional<PlayerEntity> playerEntityOptional = playerRepository.findById(player.getId());
+            if(playerEntityOptional.isEmpty()) {
+                throw new EntityNotFoundException("Player not founded");
+            }
+
+            if(matchEntity.getWhitePlayer() != null) {
+                matchEntity.setWhitePlayer(playerEntityOptional.get());
+            }
+            else {
+                matchEntity.setBlackPlayer(playerEntityOptional.get());
+            }
+        }
 
         matchEntity = matchRepository.save(matchEntity);
 
         MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
 
-        return matchDto;
+        return MatchWithPlayerTeam.builder()
+                .match(matchDto)
+                .playerTeam(matchEntity.getWhitePlayer() == null ? PieceColor.BLACK : PieceColor.WHITE)
+                .build();
     }
 
     @Override
-    public MatchDto connectMatchById(Player player2, UUID matchId) {
+    public MatchWithPlayerTeam connectMatchById(Player player2, UUID matchId) {
         Optional<MatchEntity> matchEntityOptional = matchRepository.findById(matchId);
+        MatchWithPlayerTeam matchWithPlayerTeam = new MatchWithPlayerTeam();
 
         if (matchEntityOptional.isEmpty()) {
             throw new EntityNotFoundException("Game with id " + matchId + " not founded");
@@ -72,8 +93,10 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         }
 
         if (Objects.isNull(match.getWhitePlayer())) {
+            matchWithPlayerTeam.setPlayerTeam(PieceColor.WHITE);
             match.setWhitePlayer(modelMapper.map(player2, PlayerEntity.class));
         } else {
+            matchWithPlayerTeam.setPlayerTeam(PieceColor.BLACK);
             match.setBlackPlayer(modelMapper.map(player2, PlayerEntity.class));
         }
 
@@ -81,7 +104,8 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
 
         MatchEntity savedMatch = matchRepository.save(modelMapper.map(match, MatchEntity.class));
 
-        return modelMapper.map(savedMatch, MatchDto.class);
+        matchWithPlayerTeam.setMatch(modelMapper.map(savedMatch, MatchDto.class));
+        return matchWithPlayerTeam;
     }
 
     @Override

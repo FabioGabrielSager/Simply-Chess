@@ -3,6 +3,7 @@ package com.fs.matchapi.controller;
 import com.fs.matchapi.dtos.ConnectRequest;
 import com.fs.matchapi.dtos.GameplayRequest;
 import com.fs.matchapi.dtos.MatchDto;
+import com.fs.matchapi.dtos.MatchWithPlayerTeam;
 import com.fs.matchapi.dtos.PlayerInQueueResponse;
 import com.fs.matchapi.dtos.PromoteRequest;
 import com.fs.matchapi.exceptions.IllegalMovementException;
@@ -34,15 +35,15 @@ public class MatchController {
     private SimpMessagingTemplate simpMessagingTemplate;
 
     @PostMapping("/create")
-    public ResponseEntity<MatchDto> createGame(@RequestBody Player request) {
+    public ResponseEntity<MatchWithPlayerTeam> createGame(@RequestBody Player request) {
         log.info("start game request: {}", request);
-        MatchDto match = matchService.createMatch(request);
+        MatchWithPlayerTeam match = matchService.createMatch(request);
 
         return ResponseEntity.ok(match);
     }
 
     @PostMapping("/connect")
-    public ResponseEntity<MatchDto> connect(@RequestBody ConnectRequest request) {
+    public ResponseEntity<MatchWithPlayerTeam> connect(@RequestBody ConnectRequest request) {
         log.info("connect request: {}", request);
         return ResponseEntity.ok(matchService.connectMatchById(request.getPlayer(), UUID.fromString(request.getGameId())));
     }

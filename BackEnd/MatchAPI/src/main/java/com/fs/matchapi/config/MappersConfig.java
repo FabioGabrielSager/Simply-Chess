@@ -3,6 +3,7 @@ package com.fs.matchapi.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fs.matchapi.dtos.MatchDto;
+import com.fs.matchapi.dtos.PieceResponse;
 import com.fs.matchapi.entities.PieceEntity;
 import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.model.Match;
@@ -117,6 +118,19 @@ public class MappersConfig {
             }
         });
 
+        mapper.addConverter(new AbstractConverter<PieceEntity, PieceResponse>() {
+            @Override
+            protected PieceResponse convert(PieceEntity source) {
+                return PieceResponse.builder()
+                        .id(source.getId())
+                        .position(new Pair(source.getX(), source.getY()))
+                        .color(source.getColor())
+                        .isAlive(source.isAlive())
+                        .type(source.getType())
+                        .build();
+            }
+        });
+
 
         AbstractConverter<PieceEntity, Piece> pieceEntityPieceAbstractConverter = new
                 AbstractConverter<>() {
@@ -131,23 +145,6 @@ public class MappersConfig {
                     }
                 };
 
-        AbstractConverter<Match, MatchDto> matchMatchDtoAbstractConverter = new
-                AbstractConverter<Match, MatchDto>() {
-            @Override
-            protected MatchDto convert(Match source) {
-                return MatchDto.builder()
-                        .id(source.getId())
-                        .status(source.getStatus())
-                        .isWhiteTurn(source.isWhiteTurn())
-                        .whitePieces(source.getWhitePieces())
-                        .blackPieces(source.getBlackPieces())
-                        .blackPlayer(source.getBlackPlayer().getName())
-                        .whitePlayer(source.getWhitePlayer().getName())
-                        .winner(source.getWinner().getName())
-                        .build();
-            }
-        };
-
         AbstractConverter<PlayerEntity, String> playerEntityStringAbstractConverter = new
                 AbstractConverter<PlayerEntity, String>() {
                     @Override
@@ -157,7 +154,6 @@ public class MappersConfig {
                 };
 
         mapper.addConverter(pieceEntityPieceAbstractConverter);
-        mapper.addConverter(matchMatchDtoAbstractConverter);
         mapper.addConverter(playerEntityStringAbstractConverter);
 
         return mapper;
