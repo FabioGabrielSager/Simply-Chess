@@ -56,7 +56,7 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         if(player.getId() != null) {
             Optional<PlayerEntity> playerEntityOptional = playerRepository.findById(player.getId());
             if(playerEntityOptional.isEmpty()) {
-                throw new EntityNotFoundException("Player not founded");
+                throw new EntityNotFoundException("Player with id " + player.getId() + " not founded");
             }
 
             if(matchEntity.getWhitePlayer() != null) {
@@ -92,12 +92,24 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
             throw new GameException("The game is no longer valid, there are already two players playing");
         }
 
+        PlayerEntity playerEntity =  modelMapper.map(player2, PlayerEntity.class);
+
+        if(player2.getId() != null) {
+            Optional<PlayerEntity> playerEntityOptional = playerRepository.findById(player2.getId());
+
+            if(playerEntityOptional.isEmpty()) {
+                throw new EntityNotFoundException("Player with id " + player2.getId() + " not founded");
+            }
+
+            playerEntity = playerEntityOptional.get();
+        }
+
         if (Objects.isNull(match.getWhitePlayer())) {
             matchWithPlayerTeam.setPlayerTeam(PieceColor.WHITE);
-            match.setWhitePlayer(modelMapper.map(player2, PlayerEntity.class));
+            match.setWhitePlayer(playerEntity);
         } else {
             matchWithPlayerTeam.setPlayerTeam(PieceColor.BLACK);
-            match.setBlackPlayer(modelMapper.map(player2, PlayerEntity.class));
+            match.setBlackPlayer(playerEntity);
         }
 
         match.setStatus(MatchStatus.IN_PROGRESS);
