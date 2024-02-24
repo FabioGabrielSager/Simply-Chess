@@ -42,7 +42,7 @@ public class MatchController {
         return ResponseEntity.ok(match);
     }
 
-    @PostMapping("/connect")
+    @PutMapping("/connect")
     public ResponseEntity<MatchWithPlayerTeam> connect(@RequestBody ConnectRequest request) {
         log.info("connect request: {}", request);
         return ResponseEntity.ok(matchService.connectMatchById(request.getPlayer(), UUID.fromString(request.getGameId())));
