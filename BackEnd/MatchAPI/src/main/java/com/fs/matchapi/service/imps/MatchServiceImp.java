@@ -124,7 +124,19 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
     public PlayerInQueueResponse enqueueForMatch(Player player) {
         PlayerInQueueEntity playerInQueueEntity = new PlayerInQueueEntity();
 
-        playerInQueueEntity.setPlayer(modelMapper.map(player, PlayerEntity.class));
+        PlayerEntity playerEntity = modelMapper.map(player, PlayerEntity.class);
+
+        if(player.getId() != null) {
+            Optional<PlayerEntity> playerEntityOptional = playerRepository.findById(player.getId());
+
+            if(playerEntityOptional.isEmpty()) {
+                throw new EntityNotFoundException("Player with id " + player.getId() + " not founded");
+            }
+
+            playerEntity = playerEntityOptional.get();
+        }
+
+        playerInQueueEntity.setPlayer(playerEntity);
 
         Optional<Integer> matchPositionOptional = matchQueueRepository.getLastPosition();
 
