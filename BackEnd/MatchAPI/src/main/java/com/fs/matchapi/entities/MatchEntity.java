@@ -29,18 +29,18 @@ public class MatchEntity {
     @Column(name = "is_white_turn")
     private boolean isWhiteTurn;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "white_player")
     private PlayerEntity whitePlayer;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "black_player")
     private PlayerEntity blackPlayer;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private PlayerEntity winner;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<PieceEntity> whitePieces;
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<PieceEntity> blackPieces;
 
     private LocalDateTime createdAt;

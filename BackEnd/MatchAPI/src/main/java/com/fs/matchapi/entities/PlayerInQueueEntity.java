@@ -1,5 +1,6 @@
 package com.fs.matchapi.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,6 +31,6 @@ public class PlayerInQueueEntity {
     @Column(unique = true)
     private int position;
 
-    @OneToOne
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private PlayerEntity player;
 }
