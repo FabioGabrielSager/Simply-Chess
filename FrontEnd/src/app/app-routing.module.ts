@@ -2,17 +2,12 @@ import {inject, NgModule} from '@angular/core';
 import {NavigationEnd, Router, RouterModule, Routes} from '@angular/router';
 import {MenuComponent} from "./components/menu/menu.component";
 import {authGuard} from "./guards/auth/auth.guard";
-import {ConnectingComponent} from "./components/connecting/connecting.component";
 import {SessionService} from "./services/session.service";
 import {filter} from "rxjs";
 
 const routes: Routes = [
   { path: 'home',
     component: MenuComponent
-  },
-  {
-    path: 'connecting',
-    component: ConnectingComponent
   },
   {
     path: 'match',

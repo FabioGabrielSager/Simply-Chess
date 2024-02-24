@@ -9,15 +9,14 @@ import { UsernameModalComponent } from './components/username-modal/username-mod
 import {FormsModule} from "@angular/forms";
 import {ToastContainerComponent} from "./components/toast-container/toast-container.component";
 import {HttpClientModule} from "@angular/common/http";
-import {ConnectingComponent} from "./components/connecting/connecting.component";
 import {MatchModule} from "./match/match.module";
+import {LoadingComponent} from "./components/loading/loading.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     MenuComponent,
-    UsernameModalComponent,
-    ConnectingComponent
+    UsernameModalComponent
   ],
   imports: [
     BrowserModule,
@@ -26,7 +25,8 @@ import {MatchModule} from "./match/match.module";
     FormsModule,
     ToastContainerComponent,
     HttpClientModule,
-    MatchModule
+    MatchModule,
+    LoadingComponent
   ],
   providers: [],
   bootstrap: [AppComponent]

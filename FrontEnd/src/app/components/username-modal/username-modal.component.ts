@@ -24,7 +24,6 @@ export class UsernameModalComponent{
 
     this.sessionService.saveUser(this.username);
     this.modal.close();
-    this.router.navigate(["connecting"]);
   }
 
   onKeyDown(key: any, form: NgForm) {

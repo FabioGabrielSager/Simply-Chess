@@ -6,6 +6,7 @@ import { MatchComponent } from './components/match/match.component';
 import {BoardComponent} from "./components/board/board.component";
 import { MatchMenuComponent } from './components/match-menu/match-menu.component';
 import {ClipboardModule} from "ngx-clipboard";
+import {LoadingComponent} from "../components/loading/loading.component";
 
 
 @NgModule({
@@ -18,10 +19,11 @@ import {ClipboardModule} from "ngx-clipboard";
     BoardComponent,
     MatchComponent
   ],
-    imports: [
-        CommonModule,
-        MatchRoutingModule,
-        ClipboardModule
-    ]
+  imports: [
+    CommonModule,
+    MatchRoutingModule,
+    ClipboardModule,
+    LoadingComponent
+  ]
 })
 export class MatchModule { }
