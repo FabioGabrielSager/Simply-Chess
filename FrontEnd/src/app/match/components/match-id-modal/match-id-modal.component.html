@@ -1,0 +1,23 @@
+<div class="modal-container">
+  <div class="modal-header border-0">
+    <button type="button" tabindex="-1" class="btn-close btn-close-white" (click)="modal.close('cross click')"
+            aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <form #form="ngForm">
+      <div class="mb-3">
+        <label for="matchId" class="form-label">ID de Partida: </label>
+        <input id="matchId" name="matchId" (keydown)="onKeyDown($event, form)" #match="ngModel"
+               [(ngModel)]="matchId" type="text"
+               class="form-control bg-transparent text-white" required
+               [class.is-invalid]="match.invalid && match.dirty">
+        <div class="invalid-feedback" *ngIf="match.hasError('required') && match.dirty">
+          Debe ingresar el ID de la partida.
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-0">
+    <button type="button" tabindex="0" class="btn" (click)="login(form)">Ingresar</button>
+  </div>
+</div>

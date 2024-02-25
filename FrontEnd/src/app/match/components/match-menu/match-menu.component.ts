@@ -2,6 +2,9 @@ import {Component, inject, OnInit} from '@angular/core';
 import {Router} from "@angular/router";
 import {SessionService} from "../../../services/session.service";
 import {MatchSessionService} from "../../services/match-session.service";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {UsernameModalComponent} from "../../../components/username-modal/username-modal.component";
+import {MatchIdModalComponent} from "../match-id-modal/match-id-modal.component";
 
 @Component({
   selector: 'app-match-menu',
@@ -11,6 +14,7 @@ import {MatchSessionService} from "../../services/match-session.service";
 export class MatchMenuComponent implements OnInit {
   private sessionService: SessionService = inject(SessionService);
   private matchService: MatchSessionService = inject(MatchSessionService);
+  private modalService: NgbModal = inject(NgbModal);
   private router: Router = inject(Router);
   isConnecting: boolean = this.matchService.isConnecting;
   username: string = this.sessionService.getUserName();
@@ -40,5 +44,10 @@ export class MatchMenuComponent implements OnInit {
   createMatch() {
     this.matchService.createMatch();
     this.loadingPageTitle = "Creando partida";
+  }
+
+  connectMatch() {
+    this.loadingPageTitle = "Conectando";
+    this.modalService.open(MatchIdModalComponent, {centered: true})
   }
 }

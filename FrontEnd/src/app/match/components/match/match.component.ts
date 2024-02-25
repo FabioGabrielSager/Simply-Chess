@@ -17,23 +17,27 @@ export class MatchComponent implements OnInit, OnDestroy {
   private clipboardService: ClipboardService = inject(ClipboardService);
   private toastService: ToastService = inject(ToastService);
   matchService: MatchSessionService = inject(MatchSessionService);
-  private subs : Subscription = new Subscription();
+  private subs: Subscription = new Subscription();
   matchId: string | undefined = "";
   rivalPlayerName: string = "";
-  playerName: string = "Name";
+  playerName: string = "";
 
   interval = interval(1000);
-  timer: {minutes: number, seconds: number} = {minutes: 0, seconds: 0}
+  timer: { minutes: number, seconds: number } = {minutes: 0, seconds: 0}
 
   ngOnInit(): void {
     this.matchId = this.matchService.match?.id;
-    if(this.matchService.match != null) {
-      if(this.matchService.playerTeamColor == "BLACK") {
+    if (this.matchService.match != null) {
+      if (this.matchService.playerTeamColor == "BLACK") {
         this.playerName = this.matchService.match.blackPlayer;
         this.rivalPlayerName = this.matchService.match.whitePlayer;
       } else {
         this.playerName = this.matchService.match.whitePlayer;
         this.rivalPlayerName = this.matchService.match.blackPlayer;
+      }
+
+      if (this.matchService.match.blackPlayer != undefined && this.matchService.match.whitePlayer != undefined) {
+        this.initTimer();
       }
     }
 
@@ -45,30 +49,20 @@ export class MatchComponent implements OnInit, OnDestroy {
       )
     );
 
-    this.subs.add(
-      this.interval.subscribe(
-        value => {
-          if(this.timer.seconds < 60)
-            this.timer.seconds++;
-          else  {
-            this.timer.seconds = 0;
-            this.timer.minutes++;
-          }
-        }
-      )
-    );
-
     this.subs.add(this.matchService.rivalIsConnectedSubject.subscribe(
       value => {
-        if(value) {
-          if(this.matchService.match != null) {
+        if (value) {
+          if (this.matchService.match != null) {
             this.rivalPlayerName = this.matchService.playerTeamColor == "BLACK" ?
-              this.matchService.match.whitePlayer : this.matchService.match.blackPlayer
+              this.matchService.match.whitePlayer : this.matchService.match.blackPlayer;
+            this.initTimer();
           }
         }
       }
     ));
+
   }
+
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }
@@ -78,5 +72,20 @@ export class MatchComponent implements OnInit, OnDestroy {
       this.clipboardService.copy(this.matchId);
     }
     this.toastService.show("ID Copiada!", "bg-success")
+  }
+
+  private initTimer() {
+    this.subs.add(
+      this.interval.subscribe(
+        value => {
+          if (this.timer.seconds < 60)
+            this.timer.seconds++;
+          else {
+            this.timer.seconds = 0;
+            this.timer.minutes++;
+          }
+        }
+      )
+    );
   }
 }
