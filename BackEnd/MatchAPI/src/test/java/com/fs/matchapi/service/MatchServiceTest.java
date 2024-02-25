@@ -83,7 +83,6 @@ public class MatchServiceTest {
         MatchEntity matchEntity = new MatchEntity();
 
         when(matchRepository.save(any())).thenReturn(matchEntity);
-        when(playerRepository.findById(any())).thenReturn(Optional.of(new PlayerEntity()));
 
         matchServiceImp.createMatch(new Player());
 

@@ -45,7 +45,13 @@ public class MatchController {
     @PutMapping("/connect")
     public ResponseEntity<MatchWithPlayerTeam> connect(@RequestBody ConnectRequest request) {
         log.info("connect request: {}", request);
-        return ResponseEntity.ok(matchService.connectMatchById(request.getPlayer(), UUID.fromString(request.getGameId())));
+        MatchWithPlayerTeam match =
+                matchService.connectMatchById(request.getPlayer(), UUID.fromString(request.getGameId()));
+
+        simpMessagingTemplate.convertAndSend("/queue/game-progress/" + match.getMatch().getId(),
+                match.getMatch());
+
+        return ResponseEntity.ok(match);
     }
 
     @PostMapping("/connect/matchesQueue")
