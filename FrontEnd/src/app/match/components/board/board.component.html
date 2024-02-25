@@ -1,39 +1,45 @@
 <div class="board">
-    <ng-container *ngFor="let col of columns; first as fc; last as lc">
-      <div class="indexes" *ngIf="fc"></div>
-      <div class="indexes">{{ col }}</div>
-      <div class="indexes" *ngIf="lc"></div>
-    </ng-container>
+  <ng-container *ngFor="let col of columns; first as fc; last as lc">
+    <div class="indexes" *ngIf="fc"></div>
+    <div class="indexes">{{ col }}</div>
+    <div class="indexes" *ngIf="lc"></div>
+  </ng-container>
 
-    <ng-container *ngFor="let row of rows;">
-      <ng-container *ngFor="let col of columns; first as fc; last as lc; index as ci">
+  <ng-container *ngFor="let row of rows;">
+    <ng-container *ngFor="let col of columns; first as fc; last as lc; index as ci">
 
-        <div *ngIf="fc" class="indexes"><span>{{ row }}</span></div>
-        <div class="board-square" #square (click)="onSelectedSquare(square)" id="{{row}}{{ci+1}}"
-             [ngClass]="{'white-board-square': (row + ci+1) % 2 == 1,
+      <div *ngIf="fc" class="indexes"><span>{{ row }}</span></div>
+      <div class="board-square" #square (click)="onSelectedSquare(square)" id="{{row}}{{ci+1}}"
+           [ngClass]="{'white-board-square': (row + ci+1) % 2 == 1,
            'black-board-square': (row + ci+1) % 2 == 0}">
-          <ng-container *ngFor="let p of pieces">
+        <ng-container *ngFor="let p of pieces">
           <span *ngIf="p.position.y == row && p.position.x == ci + 1" #piece
                 [id]="p.id"
-                (click)="onSelectedPiece(piece)" class="piece text-white" style="z-index: 100;">
+                (click)="onSelectedPiece(piece)" class="piece"
+                [class.text-black]="p.color == 'BLACK'"
+                [class.text-white]="p.color == 'WHITE'"
+                style="z-index: 100;">
             {{ symbolToPieceIcon.get(p.type) }}</span>
-          </ng-container>
-          <ng-container *ngFor="let rp of rivalPieces">
+        </ng-container>
+        <ng-container *ngFor="let rp of rivalPieces">
           <span *ngIf="rp.position.y == row && rp.position.x == ci + 1" #piece
                 [id]="rp.id"
-                (click)="onSelectedPiece(piece)" class="piece text-black" style="z-index: 100;">
+                (click)="onSelectedPiece(piece)" class="piece"
+                [class.text-black]="rp.color == 'BLACK'"
+                [class.text-white]="rp.color == 'WHITE'"
+                style="z-index: 100;">
             {{ symbolToPieceIcon.get(rp.type | uppercase) }}</span>
-          </ng-container>
+        </ng-container>
 
-        </div>
-        <div *ngIf="lc" class="indexes">{{ row }}</div>
+      </div>
+      <div *ngIf="lc" class="indexes">{{ row }}</div>
 
-      </ng-container>
     </ng-container>
+  </ng-container>
 
-    <ng-container *ngFor="let col of columns; first as fc; last as lc">
-      <div class="indexes" *ngIf="fc"></div>
-      <div class="indexes">{{ col }}</div>
-      <div class="indexes" *ngIf="lc"></div>
-    </ng-container>
+  <ng-container *ngFor="let col of columns; first as fc; last as lc">
+    <div class="indexes" *ngIf="fc"></div>
+    <div class="indexes">{{ col }}</div>
+    <div class="indexes" *ngIf="lc"></div>
+  </ng-container>
 </div>
