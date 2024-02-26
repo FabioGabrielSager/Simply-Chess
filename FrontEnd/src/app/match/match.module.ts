@@ -15,10 +15,11 @@ import {LoadingComponent} from "../components/loading/loading.component";
         MatchComponent,
         MatchMenuComponent
     ],
-  exports: [
-    BoardComponent,
-    MatchComponent
-  ],
+    exports: [
+        BoardComponent,
+        MatchComponent,
+        MatchMenuComponent
+    ],
   imports: [
     CommonModule,
     MatchRoutingModule,

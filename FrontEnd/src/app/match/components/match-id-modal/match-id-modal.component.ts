@@ -32,7 +32,6 @@ export class MatchIdModalComponent {
 
     this.matchService.connectMatch(this.matchId);
     this.modal.close();
-    this.router.navigate(["connecting"]);
   }
 
   onKeyDown(key: any, form: NgForm) {

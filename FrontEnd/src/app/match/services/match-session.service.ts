@@ -1,13 +1,17 @@
 import {inject, Injectable, OnDestroy, OnInit} from '@angular/core';
 import * as SockJS from "sockjs-client";
-import {Stomp} from "@stomp/stompjs";
+import {FrameImpl, Stomp} from "@stomp/stompjs";
 import {HttpClient} from "@angular/common/http";
 import {SessionService} from "../../services/session.service";
-import {Observable, Subject, Subscription} from "rxjs";
+import {Subject, Subscription} from "rxjs";
 import {MatchWithPlayerTeam} from "../../models/match-with-player-team";
 import {Match} from "../../models/match";
-import {User} from "../../models/User";
 import {ToastService} from "../../services/toast.service";
+import {GameStatus} from "../../models/game-status";
+import Swal from "sweetalert2";
+import {Router} from "@angular/router";
+import {User} from "../../models/User";
+
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +19,9 @@ import {ToastService} from "../../services/toast.service";
 export class MatchSessionService implements OnInit, OnDestroy {
 
   private toastService: ToastService = inject(ToastService);
-  private httpClient: HttpClient = inject(HttpClient);
   private stompClient: any;
   private sessionService: SessionService = inject(SessionService);
+  private router: Router = inject(Router);
   private subs: Subscription = new Subscription();
   isConnectingSubject: Subject<boolean> = new Subject<boolean>();
   rivalIsConnectedSubject: Subject<boolean> = new Subject<boolean>();
@@ -42,22 +46,35 @@ export class MatchSessionService implements OnInit, OnDestroy {
 
   createMatch(): void {
     this._isConnecting = true;
-    this.subs.add(
-      this.httpClient.post<MatchWithPlayerTeam>("http://localhost:8080/match/create", this.sessionService.user)
-        .subscribe(
-          {
-            next: value => {
-              this.onSuccessfulMatchRequest(value);
-            },
-            error: err => {
-              this.toastService.show("Hubo un error al intentar crear la partida, inténtelo mas tarde",
-                "bg-danger");
-              console.log(err);
-              this.onUnsuccessfulMatchRequest();
-            }
+    this.isConnectingSubject.next(true);
+
+    this.setUpSocketConnection();
+    this.stompClient.connect({}, () => {
+      this.stompClient.subscribe("/user/queue/reply", (payload: FrameImpl) => {
+        const value: MatchWithPlayerTeam = JSON.parse(payload.body);
+        this.stompClient.subscribe("/queue/game-progress/" + value.match.id, (payload: FrameImpl) => {
+          const match: Match = JSON.parse(payload.body);
+          console.log(match.status !== GameStatus.FINISHED, match.status != GameStatus.FINISHED)
+          if(match.status !== GameStatus.FINISHED && match.status !== GameStatus.TIED) {
+            this.onMatchUpdate(match);
+          } else {
+            this.onMatchFinish(match);
           }
-        )
-    );
+        });
+        this.match = value.match;
+        this.playerTeamColor = value.playerTeam;
+        this._isConnecting = false;
+        this.isConnectingSubject.next(false);
+        this.match = value.match;
+      });
+      this.stompClient.send("/match/create", {}, JSON.stringify(this.sessionService.user));
+      },
+      (error: any) => {
+        this.toastService.show("Hubo un error al intentar conectarse, inténtelo mas tarde",
+          "bg-danger");
+        console.log(error);
+        this.onUnsuccessfulConnection(error);
+      });
   }
 
   connectMatch(matchId: string): void {
@@ -65,64 +82,72 @@ export class MatchSessionService implements OnInit, OnDestroy {
       player: this.sessionService.user,
       gameId: matchId
     };
+
     this._isConnecting = true;
-    this.subs.add(
-      this.httpClient.put<MatchWithPlayerTeam>("http://localhost:8080/match/connect", requestBody).subscribe(
-        {
-          next: value => {
-            this.onSuccessfulMatchRequest(value)
-          },
-          error: err => {
-            if (err.status == 404) {
-              this.toastService.show(err.message,
-                "bg-danger");
-            } else {
-              this.toastService.show("Hubo un error al intentar conectarse a la partida, inténtelo mas tarde",
-                "bg-danger");
-            }
-            console.log(err);
-            this.onUnsuccessfulMatchRequest();
+    this.isConnectingSubject.next(true);
+    this.rivalIsConnected = true;
+    this.setUpSocketConnection();
+    this.stompClient.connect({}, () => {
+        this.stompClient.subscribe("/user/queue/reply", (payload: FrameImpl) => {
+          this.playerTeamColor = payload.body.substring(1, payload.body.length-1);
+          this._isConnecting = false;
+          this.isConnectingSubject.next(false);
+        });
+
+        this.stompClient.subscribe("/queue/game-progress/" + matchId, (payload: FrameImpl) => {
+          const match: Match = JSON.parse(payload.body);
+          if(!(match.status == GameStatus.FINISHED || match.status == GameStatus.TIED)) {
+            this.onMatchUpdate(match);
+          } else {
+            this.onMatchFinish(match);
           }
-        }
-      )
-    );
+        });
+        this.stompClient.send("/match/connect", {}, JSON.stringify(requestBody))
+      },
+      (error: any) => {
+        this.toastService.show("Hubo un error al intentar conectarse, inténtelo mas tarde",
+          "bg-danger");
+        console.log(error);
+        this.onUnsuccessfulConnection(error);
+      });
   }
 
-  private onMatchUpdate(payload: any) {
-    this.match = JSON.parse(payload.body) as Match;
+  private onMatchUpdate(match: Match) {
+    this.match = match;
     if (!this.rivalIsConnected) {
       this.rivalIsConnectedSubject.next(true);
       this.rivalIsConnected = true;
     }
   }
 
-  private onSuccessfulMatchRequest(value: MatchWithPlayerTeam) {
-    this.setUpSocketConnection();
-    this.stompClient.connect({}, () => {
-        this.stompClient.subscribe("/queue/game-progress/" + value.match.id, (payload: any) => {
-          this.onMatchUpdate(payload);
-        });
-        this.match = value.match;
-        this.playerTeamColor = value.playerTeam;
-        this._isConnecting = false;
-        this.isConnectingSubject.next(false);
-        this.match = value.match;
-      },
-      (error: any) => {
-        this.toastService.show("Hubo un error al intentar conectarse, inténtelo mas tarde",
-          "bg-danger");
-        console.log(error);
-      });
-  }
-
-  private onUnsuccessfulMatchRequest() {
+  private onUnsuccessfulConnection(error: Error) {
     this.match = null;
     this.playerTeamColor = undefined;
     this._isConnecting = false;
-    this.isConnectingSubject.next(false);
+    this.rivalIsConnected = false;
+    this.isConnectingSubject.error(error);
   }
 
-  // TODO: ADD LOGIC TO UPDATE SESSION VALUES ON A MATCH DISCONNECTION.
+  private onMatchFinish(match: Match) {
+    Swal.fire({
+      title: "El juego a finalizado",
+      text: "Razón: " + match.finishReason,
+      color: "rgb(255, 196, 122)",
+      background: "#261F22",
+      icon: "info",
+      confirmButtonText: "<span style='color: rgb(255, 196, 122)'>Confirmar</span>",
+      confirmButtonColor: "#4E2C0B",
+    });
+
+    this.stompClient.deactivate();
+
+    this.match = null;
+    this.playerTeamColor = undefined;
+    this._isConnecting = false;
+    this.rivalIsConnected = false;
+
+    this.router.navigate(['match']);
+  }
 
   private setUpSocketConnection() {
     const url = "//localhost:8080/chess-match";
