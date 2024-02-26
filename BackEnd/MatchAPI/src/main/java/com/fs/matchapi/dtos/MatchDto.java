@@ -19,6 +19,7 @@ import java.util.UUID;
 public class MatchDto {
     private UUID id;
     private MatchStatus status;
+    private String finishReason;
     private boolean isWhiteTurn;
     private List<PieceResponse> whitePieces;
     private List<PieceResponse> blackPieces;

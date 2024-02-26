@@ -1,9 +1,16 @@
 package com.fs.matchapi.service.imps;
 
-import com.fs.matchapi.dtos.MatchWithPlayerTeam;
+import com.fs.matchapi.dtos.MatchDto;
+import com.fs.matchapi.dtos.MatchWithPlayer;
+import com.fs.matchapi.dtos.PieceRequest;
 import com.fs.matchapi.dtos.PlayerInQueueResponse;
+import com.fs.matchapi.entities.MatchEntity;
+import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.events.PlayerEnqueuedEvent;
+import com.fs.matchapi.exceptions.GameException;
+import com.fs.matchapi.exceptions.IllegalMovementException;
+import com.fs.matchapi.exceptions.PieceNotFoundException;
 import com.fs.matchapi.model.Match;
 import com.fs.matchapi.model.MatchStatus;
 import com.fs.matchapi.model.Player;
@@ -12,15 +19,8 @@ import com.fs.matchapi.model.pieces.PieceFactory;
 import com.fs.matchapi.model.pieces.common.Pair;
 import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.model.pieces.common.PieceColor;
-import com.fs.matchapi.dtos.MatchDto;
-import com.fs.matchapi.dtos.PieceRequest;
-import com.fs.matchapi.entities.MatchEntity;
-import com.fs.matchapi.entities.PlayerEntity;
-import com.fs.matchapi.exceptions.GameException;
-import com.fs.matchapi.exceptions.IllegalMovementException;
-import com.fs.matchapi.exceptions.PieceNotFoundException;
-import com.fs.matchapi.repositories.MatchRepository;
 import com.fs.matchapi.repositories.MatchQueueRepository;
+import com.fs.matchapi.repositories.MatchRepository;
 import com.fs.matchapi.repositories.PlayerRepository;
 import com.fs.matchapi.service.MatchService;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,7 +48,7 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
     private ApplicationEventPublisher publisher;
 
     @Override
-    public MatchWithPlayerTeam createMatch(Player player) {
+    public MatchWithPlayer createMatch(Player player) {
         Match match = new Match(player);
 
         MatchEntity matchEntity = modelMapper.map(match, MatchEntity.class);
@@ -70,17 +70,20 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         matchEntity = matchRepository.save(matchEntity);
 
         MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
+        PlayerEntity playerEntity = matchEntity.getWhitePlayer() == null ? matchEntity.getBlackPlayer() :
+                matchEntity.getWhitePlayer();
 
-        return MatchWithPlayerTeam.builder()
+        return MatchWithPlayer.builder()
                 .match(matchDto)
+                .player(modelMapper.map(playerEntity, Player.class))
                 .playerTeam(matchEntity.getWhitePlayer() == null ? PieceColor.BLACK : PieceColor.WHITE)
                 .build();
     }
 
     @Override
-    public MatchWithPlayerTeam connectMatchById(Player player2, UUID matchId) {
+    public MatchWithPlayer connectMatchById(Player player2, UUID matchId) {
         Optional<MatchEntity> matchEntityOptional = matchRepository.findById(matchId);
-        MatchWithPlayerTeam matchWithPlayerTeam = new MatchWithPlayerTeam();
+        MatchWithPlayer matchWithPlayer = new MatchWithPlayer();
 
         if (matchEntityOptional.isEmpty()) {
             throw new EntityNotFoundException("Game with id " + matchId + " not founded");
@@ -105,10 +108,10 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         }
 
         if (Objects.isNull(match.getWhitePlayer())) {
-            matchWithPlayerTeam.setPlayerTeam(PieceColor.WHITE);
+            matchWithPlayer.setPlayerTeam(PieceColor.WHITE);
             match.setWhitePlayer(playerEntity);
         } else {
-            matchWithPlayerTeam.setPlayerTeam(PieceColor.BLACK);
+            matchWithPlayer.setPlayerTeam(PieceColor.BLACK);
             match.setBlackPlayer(playerEntity);
         }
 
@@ -116,8 +119,10 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
 
         MatchEntity savedMatch = matchRepository.save(modelMapper.map(match, MatchEntity.class));
 
-        matchWithPlayerTeam.setMatch(modelMapper.map(savedMatch, MatchDto.class));
-        return matchWithPlayerTeam;
+        matchWithPlayer.setPlayer(modelMapper.map(playerEntity, Player.class));
+
+        matchWithPlayer.setMatch(modelMapper.map(savedMatch, MatchDto.class));
+        return matchWithPlayer;
     }
 
     @Override

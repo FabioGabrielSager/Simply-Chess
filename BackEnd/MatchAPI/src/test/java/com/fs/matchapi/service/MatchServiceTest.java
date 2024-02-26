@@ -81,7 +81,8 @@ public class MatchServiceTest {
     @Tag("createMatch")
     public void createMatch_SaveMatch() {
         MatchEntity matchEntity = new MatchEntity();
-
+        matchEntity.setBlackPlayer(new PlayerEntity());
+        matchEntity.setWhitePlayer(new PlayerEntity());
         when(matchRepository.save(any())).thenReturn(matchEntity);
 
         matchServiceImp.createMatch(new Player());

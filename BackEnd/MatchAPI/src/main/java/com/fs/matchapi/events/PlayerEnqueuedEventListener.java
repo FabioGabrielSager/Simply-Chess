@@ -2,7 +2,7 @@ package com.fs.matchapi.events;
 
 
 import com.fs.matchapi.dtos.MatchDto;
-import com.fs.matchapi.dtos.MatchWithPlayerTeam;
+import com.fs.matchapi.dtos.MatchWithPlayer;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.model.Match;
@@ -37,8 +37,8 @@ public class PlayerEnqueuedEventListener implements ApplicationListener<PlayerEn
                 event.getPlayer().getPosition() - 1);
 
         if (playerInQueueEntityOptional.isPresent()) {
-            MatchWithPlayerTeam responseForHostPlayer = new MatchWithPlayerTeam();
-            MatchWithPlayerTeam responseForPlayer2 = new MatchWithPlayerTeam();
+            MatchWithPlayer responseForHostPlayer = new MatchWithPlayer();
+            MatchWithPlayer responseForPlayer2 = new MatchWithPlayer();
 
             Player hostPlayer = modelMapper.map(playerInQueueEntityOptional.get().getPlayer(), Player.class);
             MatchEntity matchEntity = modelMapper.map(new Match(hostPlayer),
@@ -62,10 +62,10 @@ public class PlayerEnqueuedEventListener implements ApplicationListener<PlayerEn
             responseForPlayer2.setMatch(matchDto);
 
             simpMessagingTemplate.convertAndSend(
-                    "queue/game-queue/" + event.getPlayer().getQueueId(),
+                    "/queue/game-queue/" + event.getPlayer().getQueueId(),
                     responseForPlayer2);
             simpMessagingTemplate.convertAndSend(
-                    "queue/game-queue/" + playerInQueueEntityOptional.get().getQueueId(),
+                    "/queue/game-queue/" + playerInQueueEntityOptional.get().getQueueId(),
                     responseForHostPlayer);
 
             matchQueueRepository.deleteById(event.getPlayer().getQueueId());
