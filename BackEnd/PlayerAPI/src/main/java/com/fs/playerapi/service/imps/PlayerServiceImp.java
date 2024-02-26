@@ -3,6 +3,7 @@ package com.fs.playerapi.service.imps;
 
 import com.fs.playerapi.dtos.PlayerDto;
 import com.fs.playerapi.entities.PlayerEntity;
+import com.fs.playerapi.entities.PlayerStatus;
 import com.fs.playerapi.repositories.PlayerRepository;
 import com.fs.playerapi.service.PlayerService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,8 +25,10 @@ public class PlayerServiceImp implements PlayerService {
 
     @Override
     public PlayerDto addPlayer(String playerName) {
-        PlayerEntity playerEntity = playerRepository.save(modelMapper.map(PlayerDto.builder().name(playerName).build(),
-                PlayerEntity.class));
+        PlayerEntity playerEntity = modelMapper.map(PlayerDto.builder().name(playerName).build(),
+                PlayerEntity.class);
+        playerEntity.setStatus(PlayerStatus.ONLINE);
+        playerEntity = playerRepository.save(playerEntity);
         return modelMapper.map(playerEntity, PlayerDto.class);
     }
 
