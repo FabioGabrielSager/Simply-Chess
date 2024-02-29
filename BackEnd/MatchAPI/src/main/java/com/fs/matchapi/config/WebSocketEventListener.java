@@ -3,13 +3,17 @@ package com.fs.matchapi.config;
 import com.fs.matchapi.dtos.MatchDto;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerEntity;
+import com.fs.matchapi.entities.PlayerInQueueEntity;
+import com.fs.matchapi.events.PlayerEnqueuedEvent;
 import com.fs.matchapi.model.MatchStatus;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,12 +31,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @Slf4j
 @Import(MappersConfig.class)
-public class WebSocketEventListener {
+public class WebSocketEventListener implements ApplicationEventPublisherAware {
 
     private SimpMessagingTemplate messagingTemplate;
     private MatchQueueRepository matchQueueRepository;
     private MatchRepository matchRepository;
     private ModelMapper modelMapper;
+    private ApplicationEventPublisher publisher;
 
     @EventListener
     @Transactional
@@ -41,34 +46,36 @@ public class WebSocketEventListener {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         Objects.requireNonNull(headerAccessor.getSessionAttributes());
 
-        Optional<MatchEntity> matchEntityOptional = matchRepository
-                .findById((UUID) headerAccessor.getSessionAttributes().get("matchId"));
+        if(headerAccessor.getSessionAttributes().get("matchId") != null) {
+            Optional<MatchEntity> matchEntityOptional = matchRepository
+                    .findById((UUID) headerAccessor.getSessionAttributes().get("matchId"));
 
-        if(matchEntityOptional.isEmpty()) {
-            return;
+            if(matchEntityOptional.isEmpty()) {
+                return;
+            }
+
+            MatchEntity matchEntity = matchEntityOptional.get();
+            String disconnectionReason = "";
+
+            if(matchEntity.getWhitePlayer() != null && matchEntity.getBlackPlayer() != null) {
+                PlayerEntity disconnectedPlayer = matchEntity.getWhitePlayer().getId()
+                        == headerAccessor.getSessionAttributes().get("playerId")
+                        ? matchEntity.getWhitePlayer() : matchEntity.getBlackPlayer();
+
+                matchEntity.setWinner(
+                        disconnectedPlayer.equals(matchEntity.getWhitePlayer())
+                                ? matchEntity.getBlackPlayer() : matchEntity.getWhitePlayer());
+                disconnectionReason = "Player: " + disconnectedPlayer.getName() + " left the game";
+            }
+
+            MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
+            matchDto.setStatus(MatchStatus.FINISHED);
+            matchDto.setFinishReason(disconnectionReason);
+
+            messagingTemplate.convertAndSend("/queue/game-progress/" + matchDto.getId(), matchDto);
+
+            matchRepository.delete(matchEntity);
         }
-
-        MatchEntity matchEntity = matchEntityOptional.get();
-        String disconnectionReason = "";
-
-        if(matchEntity.getWhitePlayer() != null && matchEntity.getBlackPlayer() != null) {
-            PlayerEntity disconnectedPlayer = matchEntity.getWhitePlayer().getId()
-                    == headerAccessor.getSessionAttributes().get("playerId")
-                    ? matchEntity.getWhitePlayer() : matchEntity.getBlackPlayer();
-
-            matchEntity.setWinner(
-                    disconnectedPlayer.equals(matchEntity.getWhitePlayer())
-                            ? matchEntity.getBlackPlayer() : matchEntity.getWhitePlayer());
-            disconnectionReason = "Player: " + disconnectedPlayer.getName() + " left the game";
-        }
-
-        MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
-        matchDto.setStatus(MatchStatus.FINISHED);
-        matchDto.setFinishReason(disconnectionReason);
-
-        messagingTemplate.convertAndSend("/queue/game-progress/" + matchDto.getId(), matchDto);
-
-        matchRepository.delete(matchEntity);
     }
 
     @EventListener
@@ -85,12 +92,19 @@ public class WebSocketEventListener {
 
         if(Objects.requireNonNull(destination).startsWith("/queue/game-queue/")) {
             if(!Objects.requireNonNull(headerAccessor.getSessionAttributes()).containsKey("playerId")) {
-                String playerID = matchQueueRepository
-                        .findById(UUID.fromString(destination.substring(18)))
-                        .orElseThrow().getPlayer().getId().toString();
+                PlayerInQueueEntity playerInQueueEntity = matchQueueRepository
+                        .findById(UUID.fromString(destination.substring(18))).orElseThrow();
+
+                String playerID = playerInQueueEntity.getPlayer().getId().toString();
 
                 headerAccessor.getSessionAttributes().put("playerId", playerID);
+                publisher.publishEvent(new PlayerEnqueuedEvent(this, playerInQueueEntity));
             }
         }
+    }
+
+    @Override
+    public void setApplicationEventPublisher(@NonNull ApplicationEventPublisher applicationEventPublisher) {
+        this.publisher = applicationEventPublisher;
     }
 }
