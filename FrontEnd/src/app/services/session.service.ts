@@ -1,7 +1,7 @@
-import {inject, Injectable, OnDestroy} from '@angular/core';
-import {User} from "../models/User";
+import {inject, Injectable} from '@angular/core';
+import {User} from "../models/user";
 import {HttpClient} from "@angular/common/http";
-import {Observable, of, Subject, Subscription} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import {ToastService} from "./toast.service";
 import * as SockJS from "sockjs-client";
 import {Stomp} from "@stomp/stompjs";
@@ -32,6 +32,7 @@ export class SessionService {
 
   saveUser(username: string) {
     this._isConnecting = true;
+    this.isConnectingSubject.next(true);
     this.setupSocketConnection();
 
     this.stompClient.connect({}, () => {

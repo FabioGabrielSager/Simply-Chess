@@ -3,7 +3,6 @@ import {Router} from "@angular/router";
 import {SessionService} from "../../../services/session.service";
 import {MatchSessionService} from "../../services/match-session.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {UsernameModalComponent} from "../../../components/username-modal/username-modal.component";
 import {MatchIdModalComponent} from "../match-id-modal/match-id-modal.component";
 
 @Component({
@@ -22,10 +21,15 @@ export class MatchMenuComponent implements OnInit {
 
   ngOnInit(): void {
     this.matchService.isConnectingSubject.subscribe(
-      value => {
-        this.isConnecting = value;
-        if (!value) {
-          this.router.navigate(["match/current/" + this.matchService.match?.id]);
+      {
+        next: value => {
+          this.isConnecting = value;
+          if (!value) {
+            this.router.navigate(["match/current/" + this.matchService.match?.id]);
+          }
+        },
+        error: err => {
+          this.isConnecting = false;
         }
       });
   }
@@ -36,8 +40,6 @@ export class MatchMenuComponent implements OnInit {
   }
 
   searchMatch() {
-    // TODO: IMPLEMENT LOGIC TO ENTER ON THE MATCH QUEUE
-
     this.router.navigate(['/match/queue'])
   }
 
