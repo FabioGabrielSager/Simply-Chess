@@ -64,8 +64,6 @@ public class MatchServiceTest {
     private MatchRepository matchRepository;
     @Mock
     private MatchQueueRepository matchQueueRepository;
-    @Mock
-    private ApplicationEventPublisher publisher;
     @InjectMocks
     private MatchServiceImp matchServiceImp;
 
@@ -156,7 +154,6 @@ public class MatchServiceTest {
         PlayerInQueueResponse result = matchServiceImp.enqueueForMatch(new Player());
 
         verify(matchQueueRepository, times(1)).save(any());
-        verify(publisher, times(1)).publishEvent(any());
         assertEquals(1, result.getPosition());
     }
 
@@ -171,8 +168,7 @@ public class MatchServiceTest {
         PlayerInQueueResponse result = matchServiceImp.enqueueForMatch(new Player());
 
         verify(matchQueueRepository, times(1)).save(any());
-        verify(publisher, times(1)).publishEvent(any());
-        assertEquals(3, result.getPosition());
+        assertEquals(4, result.getPosition());
     }
 
     @Test
@@ -190,10 +186,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(GameException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4));
         } catch (Exception err) {
             assertEquals("A move cannot be made until another player is connected", err.getMessage());
         }
@@ -214,10 +210,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(GameException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4));
         } catch (Exception err) {
             assertEquals("Cannot make a move in a finished game", err.getMessage());
         }
@@ -236,10 +232,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(IllegalMovementException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 6)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 6)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 6));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 6));
         } catch (Exception err) {
             assertEquals("You cannot move in white's turn", err.getMessage());
         }
@@ -260,10 +256,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(IllegalMovementException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 4));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 4));
         } catch (Exception err) {
             assertEquals("You cannot move in black's turn", err.getMessage());
         }
@@ -283,10 +279,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(IllegalMovementException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 6)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 6)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 6));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 6));
         } catch (Exception err) {
             assertEquals("You can't move a black piece", err.getMessage());
         }
@@ -306,10 +302,10 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(IllegalMovementException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 3)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 3)));
 
         try {
-            matchServiceImp.move(player, uuid, pieceRequest, new Pair(2, 3));
+            matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(2, 3));
         } catch (Exception err) {
             assertEquals("You can't move a white piece", err.getMessage());
         }
@@ -328,7 +324,7 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(PieceNotFoundException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(3, 4)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(3, 4)));
     }
 
     @Test
@@ -348,7 +344,7 @@ public class MatchServiceTest {
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
 
         assertThrows(PieceNotFoundException.class, () ->
-                matchServiceImp.move(player, uuid, pieceRequest, new Pair(3, 2)));
+                matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(3, 2)));
     }
 
     @Test
@@ -369,7 +365,7 @@ public class MatchServiceTest {
             return invocation.getArgument(0);
         });
 
-        MatchDto result = matchServiceImp.move(player, uuid, pieceRequest, new Pair(3, 6));
+        MatchDto result = matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(3, 6));
 
         verify(matchRepository, times(1)).save(any());
         assertFalse(result.isPromotedPawn());
@@ -392,7 +388,7 @@ public class MatchServiceTest {
             return invocation.getArgument(0);
         });
 
-        MatchDto result = matchServiceImp.move(player, uuid, pieceRequest, new Pair(3, 3));
+        MatchDto result = matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(3, 3));
 
         verify(matchRepository, times(1)).save(any());
         assertFalse(result.isPromotedPawn());
@@ -423,7 +419,7 @@ public class MatchServiceTest {
             return invocation.getArgument(0);
         });
 
-        MatchDto result = matchServiceImp.move(player, uuid, pieceRequest, new Pair(3, 1));
+        MatchDto result = matchServiceImp.move(player.getId(), uuid, pieceRequest, new Pair(3, 1));
 
         verify(matchRepository, times(1)).save(any());
         assertTrue(result.isPromotedPawn());
@@ -455,7 +451,7 @@ public class MatchServiceTest {
             return invocation.getArgument(0);
         });
 
-        MatchDto result = matchServiceImp.promoteAPawn(modelMapper.map(blackPlayer, Player.class),
+        MatchDto result = matchServiceImp.promoteAPawn(blackPlayer.getId(),
                 uuid, pieceRequest, 'Q');
 
         verify(matchRepository, times(1)).save(any());
@@ -490,7 +486,7 @@ public class MatchServiceTest {
             return invocation.getArgument(0);
         });
 
-        MatchDto result = matchServiceImp.promoteAPawn(modelMapper.map(whitePlayer, Player.class),
+        MatchDto result = matchServiceImp.promoteAPawn(whitePlayer.getId(),
                 uuid, pieceRequest, 'Q');
 
         verify(matchRepository, times(1)).save(any());

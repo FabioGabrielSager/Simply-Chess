@@ -6,6 +6,7 @@ import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
+import com.fs.matchapi.repositories.PlayerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,8 @@ public class MatchQueueEventHandlingTest {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Mock
+    private PlayerRepository playerRepository;
     @Mock
     private MatchQueueRepository matchQueueRepository;
     @Mock
@@ -77,6 +80,7 @@ public class MatchQueueEventHandlingTest {
         when(matchQueueRepository.findByPosition(any()))
                 .thenReturn(Optional.of(playerEnqueued));
         when(matchRepository.save(any())).thenReturn(new MatchEntity());
+        when(playerRepository.getReferenceById(any())).thenReturn(playerToEnqueue.getPlayer());
 
         eventListener.onApplicationEvent(event);
 
