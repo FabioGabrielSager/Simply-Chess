@@ -7,7 +7,6 @@ import com.fs.matchapi.dtos.PlayerInQueueResponse;
 import com.fs.matchapi.entities.MatchEntity;
 import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
-import com.fs.matchapi.events.PlayerEnqueuedEvent;
 import com.fs.matchapi.exceptions.GameException;
 import com.fs.matchapi.exceptions.IllegalMovementException;
 import com.fs.matchapi.exceptions.PieceNotFoundException;
@@ -27,9 +26,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.modelmapper.ModelMapper;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,13 +37,12 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 @Setter
-public class MatchServiceImp implements MatchService, ApplicationEventPublisherAware {
+public class MatchServiceImp implements MatchService {
 
     private PlayerRepository playerRepository;
     private MatchRepository matchRepository;
     private MatchQueueRepository matchQueueRepository;
     private ModelMapper modelMapper;
-    private ApplicationEventPublisher publisher;
 
     @Override
     public MatchWithPlayer createMatch(Player player) {
@@ -126,6 +123,7 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
     }
 
     @Override
+    @Transactional
     public PlayerInQueueResponse enqueueForMatch(Player player) {
         PlayerInQueueEntity playerInQueueEntity = new PlayerInQueueEntity();
 
@@ -146,19 +144,18 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         Optional<Integer> matchPositionOptional = matchQueueRepository.getLastPosition();
 
         if(matchPositionOptional.isPresent()) {
-            playerInQueueEntity.setPosition(matchPositionOptional.get());
+            playerInQueueEntity.setPosition(matchPositionOptional.get()+1);
         } else {
             playerInQueueEntity.setPosition(1);
         }
 
         playerInQueueEntity = matchQueueRepository.save(playerInQueueEntity);
-        publisher.publishEvent(new PlayerEnqueuedEvent(this, playerInQueueEntity));
 
         return modelMapper.map(playerInQueueEntity, PlayerInQueueResponse.class);
     }
 
     @Override
-    public MatchDto move(Player player, UUID matchId, PieceRequest pieceToMove, Pair target)
+    public MatchDto move(UUID playerId, UUID matchId, PieceRequest pieceToMove, Pair target)
             throws IllegalMovementException, PieceNotFoundException {
 
         Match match = findMatchById(matchId);
@@ -187,8 +184,12 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         Piece piece = piecesInThatPosition.stream().filter(p -> p.isAlive() == true).findFirst().orElseThrow(() ->
                 new PieceNotFoundException("There is no piece in that position"));
 
+        if(match.getWhitePlayer().getId() != playerId && match.getBlackPlayer().getId() != playerId) {
+            throw new EntityNotFoundException("Player not found");
+        }
+
         if(match.isWhiteTurn()) {
-            if (player.getId() != match.getWhitePlayer().getId()) {
+            if (playerId != match.getWhitePlayer().getId()) {
                 throw new IllegalMovementException("You cannot move in white's turn");
             }
             else if(piece.getColor().equals(PieceColor.BLACK)) {
@@ -196,7 +197,7 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
             }
         }
         else {
-            if (player.getId() != match.getBlackPlayer().getId()) {
+            if (playerId != match.getBlackPlayer().getId()) {
                 throw new IllegalMovementException("You cannot move in black's turn");
             }
             else if(piece.getColor().equals(PieceColor.WHITE)) {
@@ -219,7 +220,7 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
     }
 
     @Override
-    public MatchDto promoteAPawn(Player player, UUID matchId, PieceRequest promotedPawn, char newPieceSymbol)
+    public MatchDto promoteAPawn(UUID playerId, UUID matchId, PieceRequest promotedPawn, char newPieceSymbol)
             throws IllegalMovementException, PieceNotFoundException {
 
         Match match = findMatchById(matchId);
@@ -238,11 +239,15 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
 
         Piece newPiece = PieceFactory.create(Character.toUpperCase(newPieceSymbol), promotedPawn.color());
 
-        if(player.getId() == match.getWhitePlayer().getId() && piece.getColor().equals(PieceColor.BLACK)) {
+        if(match.getWhitePlayer().getId() != playerId && match.getBlackPlayer().getId() != playerId) {
+            throw new EntityNotFoundException("Player not found");
+        }
+
+        if(playerId == match.getWhitePlayer().getId() && piece.getColor().equals(PieceColor.BLACK)) {
             throw new IllegalMovementException("You can't promote a black piece");
         }
 
-        if(player.getId() == match.getBlackPlayer().getId() && piece.getColor().equals(PieceColor.WHITE)) {
+        if(playerId == match.getBlackPlayer().getId() && piece.getColor().equals(PieceColor.WHITE)) {
             throw new IllegalMovementException("You can't promote a white piece");
         }
 
@@ -270,10 +275,5 @@ public class MatchServiceImp implements MatchService, ApplicationEventPublisherA
         }
 
         return modelMapper.map(matchEntityOptional.get(), Match.class);
-    }
-
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
-        this.publisher = applicationEventPublisher;
     }
 }

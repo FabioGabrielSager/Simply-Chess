@@ -20,6 +20,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +35,7 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @Slf4j
-@RestController
+@Controller
 @RequestMapping("/match")
 @CrossOrigin(origins = "http://localhost:4200")
 public class MatchController {
@@ -82,29 +83,32 @@ public class MatchController {
         return ResponseEntity.ok(matchService.enqueueForMatch(request));
     }
 
-    @PutMapping("/gameplay")
-    public ResponseEntity<MatchDto> gamePlay(@RequestBody GameplayRequest request)
+    @MessageMapping("/gameplay")
+    public void gamePlay(@RequestBody GameplayRequest request, SimpMessageHeaderAccessor headerAccessor)
             throws IllegalMovementException, PieceNotFoundException {
         log.info("gameplay: {}", request);
-        MatchDto match = matchService.move(request.getPlayer(),
+
+        UUID playerID = (UUID) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("playerId");
+
+        MatchDto match = matchService.move(playerID,
                 UUID.fromString(request.getMatchId()), request.getPieceToMove(), request.getTarget());
 
         simpMessagingTemplate.convertAndSend("/queue/game-progress/" + match.getId(), match);
-
-        return ResponseEntity.ok(match);
     }
 
-    @PutMapping("/promote")
-    public ResponseEntity<MatchDto> promote(@RequestBody PromoteRequest request)
+    @MessageMapping("/promote")
+    public void promote(@Payload PromoteRequest request, SimpMessageHeaderAccessor headerAccessor)
             throws IllegalMovementException, PieceNotFoundException {
         log.info("Promote: {}", request);
-        MatchDto match = matchService.promoteAPawn(request.getPlayer(), UUID.fromString(request.getMatchId()),
+
+        UUID playerID = (UUID) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("playerId");
+
+        MatchDto match = matchService.promoteAPawn(playerID, UUID.fromString(request.getMatchId()),
                 request.getPawnToPromote(),
                 request.getNewPieceSymbol());
 
         simpMessagingTemplate.convertAndSend("/queue/game-progress/" + match.getId(), match);
 
-        return ResponseEntity.ok(match);
     }
 
     @PutMapping("/tieMatch")

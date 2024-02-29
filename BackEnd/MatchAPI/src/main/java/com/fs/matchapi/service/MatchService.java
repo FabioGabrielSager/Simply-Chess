@@ -17,9 +17,9 @@ public interface MatchService {
     MatchWithPlayer createMatch(Player player);
     MatchWithPlayer connectMatchById(Player player2, UUID matchId);
     PlayerInQueueResponse enqueueForMatch(Player player);
-    MatchDto move(Player player, UUID matchId, PieceRequest pieceToMove, Pair target)
+    MatchDto move(UUID playerId, UUID matchId, PieceRequest pieceToMove, Pair target)
             throws IllegalMovementException, PieceNotFoundException;
-    MatchDto promoteAPawn(Player player, UUID matchId, PieceRequest pieceToMove, char newPieceSymbol)
+    MatchDto promoteAPawn(UUID playerId, UUID matchId, PieceRequest pieceToMove, char newPieceSymbol)
             throws IllegalMovementException, PieceNotFoundException;
     MatchDto setMatchAsTied(UUID matchId);
 }

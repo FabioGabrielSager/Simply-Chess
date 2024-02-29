@@ -9,7 +9,6 @@ import lombok.Getter;
 @Generated
 public class GameplayRequest {
     private String matchId;
-    private Player player;
     private PieceRequest pieceToMove;
     private Pair target;
 }
