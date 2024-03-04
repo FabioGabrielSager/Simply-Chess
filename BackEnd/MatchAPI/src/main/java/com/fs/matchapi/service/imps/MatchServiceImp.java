@@ -160,7 +160,9 @@ public class MatchServiceImp implements MatchService {
 
         Match match = findMatchById(matchId);
 
-        if (match.getStatus().equals(MatchStatus.FINISHED) || match.getStatus().equals(MatchStatus.TIED)) {
+        if (match.getStatus().equals(MatchStatus.FINISHED_BY_WIN)
+                || match.getStatus().equals(MatchStatus.FINISHED_BY_ABANDONMENT)
+                || match.getStatus().equals(MatchStatus.TIED)) {
             throw new GameException("Cannot make a move in a finished game");
         }
 
@@ -184,12 +186,12 @@ public class MatchServiceImp implements MatchService {
         Piece piece = piecesInThatPosition.stream().filter(p -> p.isAlive() == true).findFirst().orElseThrow(() ->
                 new PieceNotFoundException("There is no piece in that position"));
 
-        if(match.getWhitePlayer().getId() != playerId && match.getBlackPlayer().getId() != playerId) {
+        if(match.getWhitePlayer().getId().equals(playerId) && match.getBlackPlayer().getId().equals(playerId)) {
             throw new EntityNotFoundException("Player not found");
         }
 
         if(match.isWhiteTurn()) {
-            if (playerId != match.getWhitePlayer().getId()) {
+            if (match.getBlackPlayer().getId().equals(playerId)) {
                 throw new IllegalMovementException("You cannot move in white's turn");
             }
             else if(piece.getColor().equals(PieceColor.BLACK)) {
@@ -197,7 +199,7 @@ public class MatchServiceImp implements MatchService {
             }
         }
         else {
-            if (playerId != match.getBlackPlayer().getId()) {
+            if (match.getWhitePlayer().getId().equals(playerId)) {
                 throw new IllegalMovementException("You cannot move in black's turn");
             }
             else if(piece.getColor().equals(PieceColor.WHITE)) {
@@ -239,15 +241,15 @@ public class MatchServiceImp implements MatchService {
 
         Piece newPiece = PieceFactory.create(Character.toUpperCase(newPieceSymbol), promotedPawn.color());
 
-        if(match.getWhitePlayer().getId() != playerId && match.getBlackPlayer().getId() != playerId) {
+        if(match.getWhitePlayer().getId().equals(playerId) && match.getBlackPlayer().getId().equals(playerId)) {
             throw new EntityNotFoundException("Player not found");
         }
 
-        if(playerId == match.getWhitePlayer().getId() && piece.getColor().equals(PieceColor.BLACK)) {
+        if(match.getWhitePlayer().getId().equals(playerId) && piece.getColor().equals(PieceColor.BLACK)) {
             throw new IllegalMovementException("You can't promote a black piece");
         }
 
-        if(playerId == match.getBlackPlayer().getId() && piece.getColor().equals(PieceColor.WHITE)) {
+        if(match.getBlackPlayer().getId().equals(playerId) && piece.getColor().equals(PieceColor.WHITE)) {
             throw new IllegalMovementException("You can't promote a white piece");
         }
 
