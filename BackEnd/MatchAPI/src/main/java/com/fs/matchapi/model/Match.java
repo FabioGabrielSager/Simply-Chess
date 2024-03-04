@@ -37,7 +37,7 @@ public class Match {
     private boolean isWhiteTurn;
     private Player whitePlayer;
     private Player blackPlayer;
-    private Player winner;
+    private PieceColor winner;
     private List<Piece> whitePieces;
     private List<Piece> blackPieces;
     @Setter(AccessLevel.NONE)
@@ -105,44 +105,50 @@ public class Match {
 
     public void move(Piece pieceToMove, Pair target) throws IllegalMovementException {
 
-        List<Piece> allies = pieceToMove.getColor() == PieceColor.BLACK ?
-                blackPieces.stream().filter(p -> !p.equals(pieceToMove)).toList()
-                : whitePieces.stream().filter(p -> !p.equals(pieceToMove)).toList();
+        List<Piece> allies = pieceToMove.getColor() == PieceColor.BLACK ?  blackPieces : whitePieces;
         List<Piece> enemies = pieceToMove.getColor() == PieceColor.BLACK ? whitePieces : blackPieces;
 
+        King alliedKing = getKingByColor(pieceToMove.getColor());
+        boolean kingIsUnderAttackBeforeMove = alliedKing.isUnderAttack(allies, enemies);
         pieceToMove.move(target, BOARD_LENGHT, allies, enemies);
-        this.isWhiteTurn = !this.isWhiteTurn;
-        verifyCheckmate();
-        verifyDraw();
+
+        if(kingIsUnderAttackBeforeMove && alliedKing.isUnderAttack(allies, enemies)) {
+            this.status = MatchStatus.FINISHED_BY_WIN;
+            this.winner = alliedKing.getColor() == PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+        }
+        else {
+            this.isWhiteTurn = !this.isWhiteTurn;
+            if (isADraw()) {
+                this.status = MatchStatus.TIED;
+            } else {
+                verifyCheckmate();
+            }
+        }
     }
 
     public void verifyCheckmate() {
-        King whiteKing = (King) this.whitePieces.stream().filter(p -> p instanceof King).findFirst()
-                .orElseThrow(() -> new GameInconsistencyException("White King missing"));
-        King blackKing = (King) this.blackPieces.stream().filter(p -> p instanceof King).findFirst()
-                .orElseThrow(() -> new GameInconsistencyException("Black King missing"));
+        King whiteKing = this.getKingByColor(PieceColor.WHITE);
+        King blackKing = this.getKingByColor(PieceColor.BLACK);
 
         if (whiteKing.isCheckmate(BOARD_LENGHT,
                 this.whitePieces.stream().filter(p -> !p.equals(whiteKing)).toList(),
                 this.blackPieces
         )) {
-            this.winner = this.blackPlayer;
-            this.status = MatchStatus.FINISHED;
+            this.winner = PieceColor.BLACK;
+            this.status = MatchStatus.FINISHED_BY_WIN;
         }
 
         if (blackKing.isCheckmate(BOARD_LENGHT,
                 this.blackPieces.stream().filter(p -> !p.equals(blackKing)).toList(),
                 this.whitePieces)) {
-            this.winner = this.whitePlayer;
-            this.status = MatchStatus.FINISHED;
+            this.winner = PieceColor.WHITE;
+            this.status = MatchStatus.FINISHED_BY_WIN;
         }
     }
 
-    public void verifyDraw() {
-        King whiteKing = (King) this.whitePieces.stream().filter(p -> p instanceof King).findFirst()
-                .orElseThrow(() -> new GameInconsistencyException("White King missing"));
-        King blackKing = (King) this.blackPieces.stream().filter(p -> p instanceof King).findFirst()
-                .orElseThrow(() -> new GameInconsistencyException("Black King missing"));
+    public boolean isADraw() {
+        King whiteKing = this.getKingByColor(PieceColor.WHITE);
+        King blackKing = this.getKingByColor(PieceColor.BLACK);
 
         if (whiteKing.isStaleMate(BOARD_LENGHT,
                 this.whitePieces.stream().filter(p -> !p.equals(whiteKing)).toList(),
@@ -152,8 +158,17 @@ public class Match {
                 this.whitePieces)
                 || isDeadPosition()
         ) {
-            this.status = MatchStatus.TIED;
+            return true;
         }
+        return false;
+    }
+
+    private King getKingByColor(PieceColor color) {
+        return color == PieceColor.BLACK ?
+                (King) this.blackPieces.stream().filter(p -> p instanceof King).findFirst()
+                        .orElseThrow(() -> new GameInconsistencyException("White King missing"))
+                : (King) this.whitePieces.stream().filter(p -> p instanceof King).findFirst()
+                .orElseThrow(() -> new GameInconsistencyException("Black King missing"));
     }
 
     public boolean isDeadPosition() {
@@ -185,27 +200,27 @@ public class Match {
             Bishop blackBishop = (Bishop)
                     this.blackPieces.stream().filter(p -> p instanceof Bishop).findFirst().orElseThrow();
 
-            if((whiteBishop.getPosition().getX() + whiteBishop.getPosition().getY()) % 2
+            if ((whiteBishop.getPosition().getX() + whiteBishop.getPosition().getY()) % 2
                     == (blackBishop.getPosition().getX() + blackBishop.getPosition().getY()) % 2) {
                 return true;
             }
         }
 
-            return false;
+        return false;
     }
 
     public void promoteAPawn(Pawn promotedPawn, Piece newPiece) throws IllegalMovementException {
-        if(promotedPawn.isPromoted(BOARD_LENGHT) && (newPiece instanceof Queen || newPiece instanceof Rook
-                    || newPiece instanceof Bishop || newPiece instanceof Knight)) {
-                promotedPawn.setAlive(false);
-                newPiece.setColor(promotedPawn.getColor());
-                newPiece.setPosition(promotedPawn.getPosition());
+        if (promotedPawn.isPromoted(BOARD_LENGHT) && (newPiece instanceof Queen || newPiece instanceof Rook
+                || newPiece instanceof Bishop || newPiece instanceof Knight)) {
+            promotedPawn.setAlive(false);
+            newPiece.setColor(promotedPawn.getColor());
+            newPiece.setPosition(promotedPawn.getPosition());
 
-                if(promotedPawn.getColor().equals(PieceColor.WHITE)) {
-                    this.whitePieces.add(newPiece);
-                } else {
-                    this.blackPieces.add(newPiece);
-                }
+            if (promotedPawn.getColor().equals(PieceColor.WHITE)) {
+                this.whitePieces.add(newPiece);
+            } else {
+                this.blackPieces.add(newPiece);
+            }
 
         } else {
             throw new IllegalMovementException("You cannot promote that pawn");

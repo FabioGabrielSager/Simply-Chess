@@ -25,7 +25,7 @@ public class Knight extends Piece {
     }
 
     @Override
-    public boolean isValidAttack(Pair target, List<Piece> allies, List<Piece> enemies) {
+    public boolean isReachableTarget(Pair target, List<Piece> allies, List<Piece> enemies) {
         return isLegalMove(target) && !isMoveToSamePosition(target);
     }
 }
