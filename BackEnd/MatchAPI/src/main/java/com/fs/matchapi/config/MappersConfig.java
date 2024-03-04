@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fs.matchapi.dtos.MatchDto;
 import com.fs.matchapi.dtos.PieceResponse;
+import com.fs.matchapi.entities.KingEntity;
+import com.fs.matchapi.entities.PawnEntity;
 import com.fs.matchapi.entities.PieceEntity;
 import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.model.Match;
@@ -51,14 +53,15 @@ public class MappersConfig {
         mapper.addConverter(new AbstractConverter<King, PieceEntity>() {
             @Override
             protected PieceEntity convert(King source) {
-                return PieceEntity.builder()
-                        .id(source.getId())
-                        .x(source.getPosition().getX())
-                        .y(source.getPosition().getY())
-                        .color(source.getColor())
-                        .isAlive(source.isAlive())
-                        .type('K')
-                        .build();
+                KingEntity kingEntity = new KingEntity();
+                kingEntity.setId(source.getId());
+                kingEntity.setX(source.getPosition().getX());
+                kingEntity.setY(source.getPosition().getY());
+                kingEntity.setColor(source.getColor());
+                kingEntity.setAlive(source.isAlive());
+                kingEntity.setType('K');
+                kingEntity.setWasMoved(source.isWasMoved());
+                return kingEntity;
             }
         });
 
@@ -93,14 +96,15 @@ public class MappersConfig {
         mapper.addConverter(new AbstractConverter<Pawn, PieceEntity>() {
             @Override
             protected PieceEntity convert(Pawn source) {
-                return PieceEntity.builder()
-                        .id(source.getId())
-                        .x(source.getPosition().getX())
-                        .y(source.getPosition().getY())
-                        .color(source.getColor())
-                        .isAlive(source.isAlive())
-                        .type('P')
-                        .build();
+                PawnEntity pawnEntity = new PawnEntity();
+                pawnEntity.setId(source.getId());
+                pawnEntity.setX(source.getPosition().getX());
+                pawnEntity.setY(source.getPosition().getY());
+                pawnEntity.setColor(source.getColor());
+                pawnEntity.setAlive(source.isAlive());
+                pawnEntity.setType('P');
+                pawnEntity.setWasMoved(source.isWasMoved());
+                return pawnEntity;
             }
         });
 
@@ -131,6 +135,32 @@ public class MappersConfig {
             }
         });
 
+        mapper.addConverter(new AbstractConverter<KingEntity, PieceResponse>() {
+            @Override
+            protected PieceResponse convert(KingEntity source) {
+                return PieceResponse.builder()
+                        .id(source.getId())
+                        .position(new Pair(source.getX(), source.getY()))
+                        .color(source.getColor())
+                        .isAlive(source.isAlive())
+                        .type(source.getType())
+                        .build();
+            }
+        });
+
+        mapper.addConverter(new AbstractConverter<PawnEntity, PieceResponse>() {
+            @Override
+            protected PieceResponse convert(PawnEntity source) {
+                return PieceResponse.builder()
+                        .id(source.getId())
+                        .position(new Pair(source.getX(), source.getY()))
+                        .color(source.getColor())
+                        .isAlive(source.isAlive())
+                        .type(source.getType())
+                        .build();
+            }
+        });
+
 
         AbstractConverter<PieceEntity, Piece> pieceEntityPieceAbstractConverter = new
                 AbstractConverter<>() {
@@ -145,6 +175,36 @@ public class MappersConfig {
                     }
                 };
 
+        AbstractConverter<KingEntity, Piece> kingEntityPieceAbstractConverter = new
+                AbstractConverter<>() {
+                    @Override
+                    protected Piece convert(KingEntity source) {
+                        King piece = (King) PieceFactory.create(source.getType(),
+                                source.getColor(),
+                                new Pair(source.getX(), source.getY()));
+                        piece.setId(source.getId());
+                        piece.setAlive(source.isAlive());
+                        piece.setWasMoved(source.isWasMoved());
+                        return piece;
+                    }
+                };
+
+        AbstractConverter<PawnEntity, Piece> pawnEntityPieceAbstractConverter = new
+                AbstractConverter<>() {
+                    @Override
+                    protected Piece convert(PawnEntity source) {
+                        Pawn piece = (Pawn) PieceFactory.create(source.getType(),
+                                source.getColor(),
+                                new Pair(source.getX(), source.getY()));
+                        piece.setId(source.getId());
+                        piece.setAlive(source.isAlive());
+                        piece.setWasMoved(source.isWasMoved());
+                        return piece;
+                    }
+                };
+
+
+
         AbstractConverter<PlayerEntity, String> playerEntityStringAbstractConverter = new
                 AbstractConverter<PlayerEntity, String>() {
                     @Override
@@ -154,6 +214,8 @@ public class MappersConfig {
                 };
 
         mapper.addConverter(pieceEntityPieceAbstractConverter);
+        mapper.addConverter(kingEntityPieceAbstractConverter);
+        mapper.addConverter(pawnEntityPieceAbstractConverter);
         mapper.addConverter(playerEntityStringAbstractConverter);
 
         return mapper;
