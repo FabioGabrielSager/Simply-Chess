@@ -84,7 +84,8 @@ public class MatchController {
     }
 
     @MessageMapping("/gameplay")
-    public void gamePlay(@RequestBody GameplayRequest request, SimpMessageHeaderAccessor headerAccessor)
+    @Transactional
+    public void gamePlay(@Payload GameplayRequest request, SimpMessageHeaderAccessor headerAccessor)
             throws IllegalMovementException, PieceNotFoundException {
         log.info("gameplay: {}", request);
 
@@ -97,6 +98,7 @@ public class MatchController {
     }
 
     @MessageMapping("/promote")
+    @Transactional
     public void promote(@Payload PromoteRequest request, SimpMessageHeaderAccessor headerAccessor)
             throws IllegalMovementException, PieceNotFoundException {
         log.info("Promote: {}", request);
