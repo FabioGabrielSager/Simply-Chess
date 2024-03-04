@@ -1,6 +1,7 @@
 package com.fs.matchapi.entities;
 
 import com.fs.matchapi.model.MatchStatus;
+import com.fs.matchapi.model.pieces.common.PieceColor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Generated;
@@ -35,12 +36,12 @@ public class MatchEntity {
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "black_player")
     private PlayerEntity blackPlayer;
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private PlayerEntity winner;
+    @Enumerated(EnumType.STRING)
+    private PieceColor winner;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<PieceEntity> whitePieces;
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<PieceEntity> blackPieces;
 
     private LocalDateTime createdAt;
