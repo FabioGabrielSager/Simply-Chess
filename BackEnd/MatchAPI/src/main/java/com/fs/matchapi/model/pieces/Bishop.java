@@ -5,6 +5,7 @@ import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.exceptions.IllegalMovementException;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuperBuilder
@@ -46,9 +47,25 @@ public class Bishop extends Piece {
     }
 
     @Override
-    public boolean isValidAttack(Pair target, List<Piece> allies, List<Piece> enemies) {
+    public boolean isReachableTarget(Pair target, List<Piece> allies, List<Piece> enemies) {
         return isLegalMovement(target)
                 && !isTherePiecePathBlocking(target, allies, enemies)
                 && !isMoveToSamePosition(target);
+    }
+
+    @Override
+    public List<Pair> getPathToTarget(Pair target) {
+
+        Pair actualPosition = this.position.clone();
+        List<Pair> path = new ArrayList<>();
+
+        for (int i = 1; i < Math.abs(target.getX() - this.position.getX()); i++) {
+            actualPosition.setX(this.position.getX() + i * (target.getX() > this.position.getX() ? 1 : -1));
+            actualPosition.setY(this.position.getY() + i * (target.getY() > this.position.getY() ? 1 : -1));
+
+            path.add(actualPosition);
+        }
+
+        return path;
     }
 }

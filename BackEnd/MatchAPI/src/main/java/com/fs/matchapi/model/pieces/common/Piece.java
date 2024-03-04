@@ -6,9 +6,11 @@ import com.fs.matchapi.exceptions.IllegalMovementException;
 import com.fs.matchapi.exceptions.OutOfBoundsException;
 import com.fs.matchapi.exceptions.SamePositionException;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,7 +59,7 @@ public abstract class Piece {
         }
     }
 
-    protected final boolean isMoveToSamePosition(Pair target) {
+    protected final boolean isMoveToSamePosition(@NonNull Pair target) {
         return this.position.getX() == target.getX() && this.position.getY() == target.getY();
     }
 
@@ -78,6 +80,9 @@ public abstract class Piece {
 
     }
 
-    public abstract boolean isValidAttack(Pair target, List<Piece> allies, List<Piece> enemies)
-            throws PieceBlockingException;
+    public abstract boolean isReachableTarget(Pair target, List<Piece> allies, List<Piece> enemies);
+
+    public List<Pair> getPathToTarget(Pair target) {
+        return new ArrayList<>();
+    }
 }

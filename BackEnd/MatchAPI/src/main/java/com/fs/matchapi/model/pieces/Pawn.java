@@ -4,13 +4,14 @@ import com.fs.matchapi.exceptions.IllegalMovementException;
 import com.fs.matchapi.model.pieces.common.Pair;
 import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.model.pieces.common.PieceColor;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @SuperBuilder
 public class Pawn extends Piece {
-
+    @Getter
     private boolean wasMoved;
 
     @Override
@@ -46,7 +47,7 @@ public class Pawn extends Piece {
     protected void additionalStep(Pair target, List<Piece> allies, List<Piece> enemies)
             throws IllegalMovementException {
 
-        if (!isValidAttack(target, allies, enemies)) {
+        if (!isReachableTarget(target, allies, enemies)) {
             throw new IllegalMovementException("The move violates the Pawn's movement rules");
         }
 
@@ -55,7 +56,7 @@ public class Pawn extends Piece {
     }
 
     @Override
-    public boolean isValidAttack(Pair target, List<Piece> allies, List<Piece> enemies) {
+    public boolean isReachableTarget(Pair target, List<Piece> allies, List<Piece> enemies) {
         int direction = this.color.equals(PieceColor.WHITE) ? 1 : -1;
 
         if (target.getY() == this.position.getY() + direction
@@ -72,6 +73,11 @@ public class Pawn extends Piece {
     public boolean isPromoted(int boardLengh) {
         return this.color.equals(PieceColor.WHITE) && this.position.getY() == boardLengh
                 || this.color.equals(PieceColor.BLACK) && this.position.getY() == 1;
+    }
+
+    @Override
+    public List<Pair> getPathToTarget(Pair target) {
+        return List.of(target);
     }
 
     public void setWasMoved(boolean wasMoved) {

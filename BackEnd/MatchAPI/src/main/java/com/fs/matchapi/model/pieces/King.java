@@ -4,14 +4,16 @@ import com.fs.matchapi.model.pieces.common.Pair;
 import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.exceptions.GameInconsistencyException;
 import com.fs.matchapi.exceptions.IllegalMovementException;
-import com.fs.matchapi.exceptions.PieceBlockingException;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuperBuilder
 public class King extends Piece {
+    @Getter
     private boolean wasMoved;
 
     @Override
@@ -30,7 +32,7 @@ public class King extends Piece {
     }
 
     @Override
-    public boolean isValidAttack(Pair target, List<Piece> allies, List<Piece> enemies) {
+    public boolean isReachableTarget(Pair target, List<Piece> allies, List<Piece> enemies) {
         return isLegalMovement(target) && !isMoveToSamePosition(target);
     }
 
@@ -43,10 +45,10 @@ public class King extends Piece {
 
         // Validate king under attack
         for (Piece enemy : enemies) {
-            if (enemy.isAlive() && enemy.isValidAttack(target, allies, enemies)) {
+            if (enemy.isAlive() && enemy.isReachableTarget(target, allies, enemies)) {
                 throw new IllegalMovementException("The move violates the King's movement rules");
             }
-            if (enemy.isValidAttack(this.position, allies, enemies)) {
+            if (enemy.isReachableTarget(this.position, allies, enemies)) {
                 isUnderAttack = true;
             }
         }
@@ -87,47 +89,112 @@ public class King extends Piece {
         }
     }
 
-    public boolean isUnderAttack(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
-        for(Piece e : enemies) {
-            try {
-                if( e.isValidAttack(this.position,
-                        enemies.stream().filter(ae -> !ae.equals(e)).toList(), allies)) {
-                    return true;
+    public boolean isStaleMate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+        if (isUnderAttack(allies, enemies)) {
+            return false;
+        }
+
+        List<Pair> availableSquares = getKingPossibleMoves(boardLegnth, allies);
+
+        if (availableSquares.isEmpty()) {
+            return false;
+        }
+
+        for (Pair as : availableSquares) {
+            List<Piece> attackers = getAttackingPieces(as, allies, enemies);
+            if (attackers.isEmpty()) {
+                return false;
+            }
+
+            for (Piece a : attackers) {
+                List<Pair> attackerPath = a.getPathToTarget(this.position);
+                for (Pair step : attackerPath) {
+                    if (this.canTargetBeProtected(a, step, allies, enemies)) {
+                        return false;
+                    }
                 }
-            } catch (PieceBlockingException ignored) {
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isCheckmate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+        List<Piece> attackingPieces = getAttackingPieces(this.position, allies, enemies);
+        if (!attackingPieces.isEmpty()) {
+            if (areAllPossibleMovesAttacked(boardLegnth, allies, enemies)) {
+                if (attackingPieces.size() > 1) {
+                    return true;
+                } else {
+                    return !canTargetBeProtected(attackingPieces.get(0), this.position, allies, enemies);
+                }
             }
         }
 
         return false;
     }
 
-    public boolean isStaleMate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
-        return areAllPossileMovesAttacked(boardLegnth, allies, enemies) && isUnderAttack(boardLegnth, allies, enemies);
+    public boolean isUnderAttack(List<Piece> allies, List<Piece> enemies) {
+        for (Piece e : enemies) {
+            if (e.isAlive() && e.isReachableTarget(this.position,
+                    enemies.stream().filter(ae -> !ae.equals(e)).toList(), allies)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public boolean isCheckmate(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
-        return areAllPossileMovesAttacked(boardLegnth, allies, enemies) && isUnderAttack(boardLegnth, allies, enemies);
+    private List<Piece> getAttackingPieces(Pair target, List<Piece> allies, List<Piece> enemies) {
+        return enemies.stream().filter(p -> p.isReachableTarget(target, allies, enemies)).toList();
     }
 
-    private boolean areAllPossileMovesAttacked(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
+    private boolean areAllPossibleMovesAttacked(int boardLegnth, List<Piece> allies, List<Piece> enemies) {
         List<Pair> availableSquares = getKingPossibleMoves(boardLegnth, allies);
         int attackedSquaresAmount = 0;
 
-        for (Pair pm: availableSquares) {
+        for (Pair pm : availableSquares) {
             for (Piece e : enemies) {
-                try {
-                    if (e.isValidAttack(pm, enemies.stream().filter(ae -> !ae.equals(e)).toList(), allies)) {
-                        attackedSquaresAmount++;
+                if (e.isReachableTarget(pm, enemies.stream().filter(ae -> !ae.equals(e)).toList(), allies)) {
+                    attackedSquaresAmount++;
+                    if (attackedSquaresAmount == availableSquares.size()) {
+                        return true;
                     }
-                } catch (PieceBlockingException ignored) {
                 }
             }
         }
 
-        return attackedSquaresAmount == availableSquares.size();
+        return availableSquares.isEmpty();
     }
 
-    private List<Pair> getKingPossibleMoves(int boardLegnth, List<Piece> allies) {
+    private boolean canTargetBeProtected(Piece attackingPiece, Pair squareToProtect, List<Piece> allies,
+                                         List<Piece> enemies) {
+
+        for (Pair step : attackingPiece.getPathToTarget(squareToProtect)) {
+            for (Piece a : allies) {
+                if(!(attackingPiece instanceof Knight)) {
+                    if (a.isReachableTarget(step, allies, enemies)) {
+                        return true;
+                    }
+                }
+                if (a.isReachableTarget(attackingPiece.getPosition(), allies, enemies)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns all squares not occupied by allies that the king can move to,
+     * regardless of whether the square is under attack or no.
+     *
+     * @param boardLength The length of the board.
+     * @param allies      A list of allied pieces on the board.
+     * @return A list of pairs representing possible moves for the king.
+     */
+    private List<Pair> getKingPossibleMoves(int boardLength, List<Piece> allies) {
         List<Pair> posiblesMoves = new ArrayList<>();
 
         for (int x = -1; x <= 1; x++) {
@@ -137,8 +204,8 @@ public class King extends Piece {
 
                 Pair possibleMove = new Pair(this.position.getX() + x, this.position.getY() + y);
 
-                if (possibleMove.isValidWithinBounds(boardLegnth, 1)) {
-                    if(allies.stream().noneMatch(a -> a.getPosition().getX() == possibleMove.getX()
+                if (possibleMove.isValidWithinBounds(boardLength, 1)) {
+                    if (allies.stream().noneMatch(a -> a.isAlive() && a.getPosition().getX() == possibleMove.getX()
                             && a.getPosition().getY() == possibleMove.getY())) {
                         posiblesMoves.add(possibleMove);
                     }
