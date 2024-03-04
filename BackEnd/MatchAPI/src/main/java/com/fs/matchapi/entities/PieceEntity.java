@@ -1,14 +1,7 @@
 package com.fs.matchapi.entities;
 
 import com.fs.matchapi.model.pieces.common.PieceColor;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
@@ -23,20 +16,22 @@ import lombok.Setter;
 @Table(name = "pieces")
 @Getter @Setter
 @Generated
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "piece_type", discriminatorType = DiscriminatorType.STRING)
 public class PieceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    protected Long id;
 
-    private int x;
-    private int y;
+    protected int x;
+    protected int y;
 
-    private Character type;
+    protected Character type;
 
     @Enumerated(EnumType.STRING)
-    private PieceColor color;
+    protected PieceColor color;
 
     @Column(name = "is_alive")
-    private boolean isAlive;
+    protected boolean isAlive;
 }
