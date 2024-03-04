@@ -6,6 +6,7 @@ import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.events.PlayerEnqueuedEvent;
 import com.fs.matchapi.model.MatchStatus;
+import com.fs.matchapi.model.pieces.common.PieceColor;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
 import lombok.AllArgsConstructor;
@@ -55,31 +56,32 @@ public class WebSocketEventListener implements ApplicationEventPublisherAware {
             }
 
             MatchEntity matchEntity = matchEntityOptional.get();
-            String disconnectionReason = "";
 
-            if(matchEntity.getWhitePlayer() != null && matchEntity.getBlackPlayer() != null) {
-                PlayerEntity disconnectedPlayer = matchEntity.getWhitePlayer().getId()
-                        == headerAccessor.getSessionAttributes().get("playerId")
-                        ? matchEntity.getWhitePlayer() : matchEntity.getBlackPlayer();
+            if(!(matchEntity.getStatus().equals(MatchStatus.FINISHED_BY_WIN) ||
+                    matchEntity.getStatus().equals(MatchStatus.TIED))) {
+                if (matchEntity.getWhitePlayer() != null && matchEntity.getBlackPlayer() != null) {
+                    PlayerEntity disconnectedPlayer = matchEntity.getWhitePlayer().getId()
+                            == headerAccessor.getSessionAttributes().get("playerId")
+                            ? matchEntity.getWhitePlayer() : matchEntity.getBlackPlayer();
 
-                matchEntity.setWinner(
-                        disconnectedPlayer.equals(matchEntity.getWhitePlayer())
-                                ? matchEntity.getBlackPlayer() : matchEntity.getWhitePlayer());
-                disconnectionReason = "Player: " + disconnectedPlayer.getName() + " left the game";
+                    matchEntity.setWinner(
+                            disconnectedPlayer.equals(matchEntity.getWhitePlayer())
+                                    ? PieceColor.BLACK : PieceColor.WHITE);
+
+                    matchEntity.setStatus(MatchStatus.FINISHED_BY_ABANDONMENT);
+                    matchRepository.save(matchEntity);
+                }
             }
 
             MatchDto matchDto = modelMapper.map(matchEntity, MatchDto.class);
-            matchDto.setStatus(MatchStatus.FINISHED);
-            matchDto.setFinishReason(disconnectionReason);
-
             messagingTemplate.convertAndSend("/queue/game-progress/" + matchDto.getId(), matchDto);
 
-            matchRepository.delete(matchEntity);
         }
     }
 
     @EventListener
     public void handleWebSocketSubscribeEvent(SessionSubscribeEvent event) {
+        log.info("Listen to websocket subscribe event");
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String destination = headerAccessor.getDestination();
         if(Objects.requireNonNull(destination).startsWith("/queue/game-progress/")) {
@@ -95,7 +97,7 @@ public class WebSocketEventListener implements ApplicationEventPublisherAware {
                 PlayerInQueueEntity playerInQueueEntity = matchQueueRepository
                         .findById(UUID.fromString(destination.substring(18))).orElseThrow();
 
-                String playerID = playerInQueueEntity.getPlayer().getId().toString();
+                UUID playerID = playerInQueueEntity.getPlayer().getId();
 
                 headerAccessor.getSessionAttributes().put("playerId", playerID);
                 publisher.publishEvent(new PlayerEnqueuedEvent(this, playerInQueueEntity));
