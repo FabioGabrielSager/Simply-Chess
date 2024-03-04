@@ -373,12 +373,12 @@ public class KingTest {
                         .isAlive(true)
                         .build(),
                 Rook.builder()
-                        .position(new Pair(8, 4))
+                        .position(new Pair(7, 4))
                         .color(PieceColor.WHITE)
                         .isAlive(true)
                         .build(),
                 Bishop.builder()
-                        .position(new Pair(5, 5))
+                        .position(new Pair(4, 5))
                         .color(PieceColor.WHITE)
                         .isAlive(true)
                         .build()

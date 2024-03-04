@@ -1,5 +1,6 @@
 package com.fs.matchapi.model;
 
+import com.fs.matchapi.model.pieces.Bishop;
 import com.fs.matchapi.model.pieces.Knight;
 import com.fs.matchapi.model.pieces.Pawn;
 import com.fs.matchapi.model.pieces.PieceFactory;
@@ -30,11 +31,11 @@ public class MatchTest {
     private Player player;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         player = Player.builder().id(UUID.randomUUID()).build();
         inProgressMatch = new Match(player);
         newMatch = new Match(player);
-        if(inProgressMatch.getWhitePlayer() == null) {
+        if (inProgressMatch.getWhitePlayer() == null) {
             inProgressMatch.setWhitePlayer(Player.builder().build());
         } else {
             inProgressMatch.setBlackPlayer(Player.builder().build());
@@ -79,9 +80,9 @@ public class MatchTest {
         Optional<Piece> blackPawnToMoveOptional = inProgressMatch.getBlackPieces().stream().filter(p -> p instanceof Pawn &&
                 p.getPosition().getX() == 1).findFirst();
 
-        if(whitePawnToMoveOptional.isPresent())
+        if (whitePawnToMoveOptional.isPresent())
             inProgressMatch.move(whitePawnToMoveOptional.get(), new Pair(1, 3));
-        if(blackPawnToMoveOptional.isPresent())
+        if (blackPawnToMoveOptional.isPresent())
             inProgressMatch.move(blackPawnToMoveOptional.get(), new Pair(1, 5));
     }
 
@@ -91,7 +92,7 @@ public class MatchTest {
         inProgressMatch.verifyCheckmate();
 
         assertNull(inProgressMatch.getWinner());
-        assertNotEquals(MatchStatus.FINISHED, inProgressMatch.getStatus());
+        assertNotEquals(MatchStatus.FINISHED_BY_WIN, inProgressMatch.getStatus());
     }
 
     @Test
@@ -102,13 +103,24 @@ public class MatchTest {
                 .stream()
                 .filter(p -> p instanceof Knight).findFirst()
                 .ifPresent(piece -> piece.setPosition(new Pair(4, 3)));
-
+        inProgressMatch.getWhitePieces()
+                .stream()
+                .filter(p -> p instanceof Pawn
+                        && (p.getPosition().getX() == 3 || p.getPosition().getX() == 5)
+                        && p.getPosition().getY() == 2 || p instanceof Bishop
+                        && p.getPosition().getY() == 1 && p.getPosition().getX() == 6)
+                .forEach(p -> {
+                    p.setAlive(false);
+                    inProgressMatch.getBlackPieces().add(
+                            PieceFactory
+                                    .create(p.getClass().getSimpleName().charAt(0), PieceColor.BLACK, p.getPosition()));
+                });
 
         inProgressMatch.verifyCheckmate();
 
         assertNotNull(inProgressMatch.getWinner());
-        assertEquals(inProgressMatch.getBlackPlayer(), inProgressMatch.getWinner());
-        assertEquals(MatchStatus.FINISHED, inProgressMatch.getStatus());
+        assertEquals(PieceColor.BLACK, inProgressMatch.getWinner());
+        assertEquals(MatchStatus.FINISHED_BY_WIN, inProgressMatch.getStatus());
 
     }
 
@@ -120,14 +132,25 @@ public class MatchTest {
         inProgressMatch.getWhitePieces()
                 .stream()
                 .filter(p -> p instanceof Knight).findFirst()
-                .ifPresent(piece -> piece.setPosition(new Pair(4, 6 )));
-
+                .ifPresent(piece -> piece.setPosition(new Pair(4, 6)));
+        inProgressMatch.getBlackPieces()
+                .stream()
+                .filter(p -> p instanceof Pawn
+                        && (p.getPosition().getX() == 3 || p.getPosition().getX() == 5)
+                        && p.getPosition().getY() == 7 || p instanceof Bishop
+                        && p.getPosition().getY() == 8 && p.getPosition().getX() == 6)
+                .forEach(p -> {
+                    p.setAlive(false);
+                    inProgressMatch.getWhitePieces().add(
+                            PieceFactory
+                                    .create(p.getClass().getSimpleName().charAt(0), PieceColor.WHITE, p.getPosition()));
+                });
 
         inProgressMatch.verifyCheckmate();
 
         assertNotNull(inProgressMatch.getWinner());
-        assertEquals(inProgressMatch.getWhitePlayer(), inProgressMatch.getWinner());
-        assertEquals(MatchStatus.FINISHED, inProgressMatch.getStatus());
+        assertEquals(PieceColor.WHITE, inProgressMatch.getWinner());
+        assertEquals(MatchStatus.FINISHED_BY_WIN, inProgressMatch.getStatus());
     }
 
     @Test
@@ -136,7 +159,7 @@ public class MatchTest {
     public void promoteAPawnTest1() throws IllegalMovementException {
         Match match = new Match();
         match.setBlackPieces(new ArrayList<>());
-        Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1,1));
+        Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1, 1));
 
         match.getBlackPieces().add(promotedPawn);
 
@@ -154,7 +177,7 @@ public class MatchTest {
     public void promoteAPawnTest2() throws IllegalMovementException {
         Match match = new Match();
         match.setBlackPieces(new ArrayList<>());
-        Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1,5));
+        Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1, 5));
 
         match.getBlackPieces().add(promotedPawn);
 

@@ -14,9 +14,7 @@ import com.fs.matchapi.exceptions.PieceNotFoundException;
 import com.fs.matchapi.model.Match;
 import com.fs.matchapi.model.MatchStatus;
 import com.fs.matchapi.model.Player;
-import com.fs.matchapi.model.pieces.Queen;
 import com.fs.matchapi.model.pieces.common.Pair;
-import com.fs.matchapi.model.pieces.common.Piece;
 import com.fs.matchapi.model.pieces.common.PieceColor;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
@@ -36,7 +34,6 @@ import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 
 import java.lang.reflect.Method;
@@ -204,7 +201,7 @@ public class MatchServiceTest {
         MatchEntity matchEntity = modelMapper.map(new Match(Player.builder().id(UUID.randomUUID()).build(), player),
                 MatchEntity.class);
         matchEntity.setId(uuid);
-        matchEntity.setStatus(MatchStatus.FINISHED);
+        matchEntity.setStatus(MatchStatus.FINISHED_BY_WIN);
         PieceRequest pieceRequest = new PieceRequest(PieceColor.WHITE, new Pair(2, 2));
 
         when(matchRepository.findById(uuid)).thenReturn(Optional.of(matchEntity));
@@ -438,6 +435,7 @@ public class MatchServiceTest {
         matchEntity.setId(uuid);
         matchEntity.setWhiteTurn(false);
         matchEntity.setBlackPlayer(blackPlayer);
+        matchEntity.getWhitePlayer().setId(UUID.randomUUID());
 
         matchEntity.getBlackPieces().stream().filter(p -> p.getX() == 3 && p.getY() == 7)
                 .findFirst().orElseThrow().setY(1);
@@ -473,6 +471,7 @@ public class MatchServiceTest {
                 MatchEntity.class);
         matchEntity.setId(uuid);
         matchEntity.setWhitePlayer(whitePlayer);
+        matchEntity.getBlackPlayer().setId(UUID.randomUUID());
 
         matchEntity.getWhitePieces().stream().filter(p -> p.getX() == 3 && p.getY() == 2)
                 .findFirst().orElseThrow().setY(8);
