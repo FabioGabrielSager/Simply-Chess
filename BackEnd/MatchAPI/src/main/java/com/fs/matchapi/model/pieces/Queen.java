@@ -36,7 +36,7 @@ public class Queen extends Piece {
 
         if (target.getY() == this.position.getY()) {
             for (int i = 1; i < Math.abs(target.getX() - this.position.getX()); i++) {
-                actualPosition.setY(this.position.getX() + i * (target.getX() > this.position.getX() ? 1 : -1));
+                actualPosition.setX(this.position.getX() + i * (target.getX() > this.position.getX() ? 1 : -1));
                 if (allies.stream().anyMatch(
                         a -> a.isAlive() && a.getPosition().getX() == actualPosition.getX()
                                 && a.getPosition().getY() == target.getY())) {
