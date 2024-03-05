@@ -6,6 +6,7 @@ import com.fs.matchapi.dtos.PieceRequest;
 import com.fs.matchapi.dtos.PieceResponse;
 import com.fs.matchapi.dtos.PlayerInQueueResponse;
 import com.fs.matchapi.entities.MatchEntity;
+import com.fs.matchapi.entities.PieceEntity;
 import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import com.fs.matchapi.exceptions.GameException;
@@ -437,6 +438,11 @@ public class MatchServiceTest {
         matchEntity.setBlackPlayer(blackPlayer);
         matchEntity.getWhitePlayer().setId(UUID.randomUUID());
 
+        for(int i = 0; i < 16; i++) {
+            matchEntity.getWhitePieces().get(i).setId((long) i);
+            matchEntity.getBlackPieces().get(i).setId((long) (16 + i));
+        }
+
         matchEntity.getBlackPieces().stream().filter(p -> p.getX() == 3 && p.getY() == 7)
                 .findFirst().orElseThrow().setY(1);
 
@@ -472,6 +478,11 @@ public class MatchServiceTest {
         matchEntity.setId(uuid);
         matchEntity.setWhitePlayer(whitePlayer);
         matchEntity.getBlackPlayer().setId(UUID.randomUUID());
+
+        for(int i = 0; i < 16; i++) {
+            matchEntity.getWhitePieces().get(i).setId((long) i);
+            matchEntity.getBlackPieces().get(i).setId((long) (16 + i));
+        }
 
         matchEntity.getWhitePieces().stream().filter(p -> p.getX() == 3 && p.getY() == 2)
                 .findFirst().orElseThrow().setY(8);
