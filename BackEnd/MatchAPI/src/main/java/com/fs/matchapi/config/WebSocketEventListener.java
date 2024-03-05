@@ -9,6 +9,7 @@ import com.fs.matchapi.model.MatchStatus;
 import com.fs.matchapi.model.pieces.common.PieceColor;
 import com.fs.matchapi.repositories.MatchQueueRepository;
 import com.fs.matchapi.repositories.MatchRepository;
+import com.fs.matchapi.repositories.PlayerRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class WebSocketEventListener implements ApplicationEventPublisherAware {
 
     private SimpMessagingTemplate messagingTemplate;
     private MatchQueueRepository matchQueueRepository;
+    private PlayerRepository playerRepository;
     private MatchRepository matchRepository;
     private ModelMapper modelMapper;
     private ApplicationEventPublisher publisher;
@@ -44,8 +46,14 @@ public class WebSocketEventListener implements ApplicationEventPublisherAware {
     @Transactional
     public void handleWebSocketDisconnectEvent(SessionDisconnectEvent event) {
         log.info("Listen to websocket disconnect event");
+
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         Objects.requireNonNull(headerAccessor.getSessionAttributes());
+
+        PlayerEntity playerEntity =
+                playerRepository.findById((UUID) headerAccessor.getSessionAttributes().get("playerId")).orElseThrow();
+
+        matchQueueRepository.deleteByPlayer(playerEntity);
 
         if(headerAccessor.getSessionAttributes().get("matchId") != null) {
             Optional<MatchEntity> matchEntityOptional = matchRepository

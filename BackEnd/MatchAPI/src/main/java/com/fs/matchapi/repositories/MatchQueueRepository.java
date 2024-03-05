@@ -1,5 +1,6 @@
 package com.fs.matchapi.repositories;
 
+import com.fs.matchapi.entities.PlayerEntity;
 import com.fs.matchapi.entities.PlayerInQueueEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,8 @@ public interface MatchQueueRepository extends JpaRepository<PlayerInQueueEntity,
     Optional<Integer> getLastPosition();
 
     Optional<PlayerInQueueEntity> findByPosition(Integer position);
+
+    void deleteByPlayer(PlayerEntity player);
 
     void deleteById(UUID id);
 }
