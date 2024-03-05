@@ -160,6 +160,8 @@ public class MatchTest {
         Match match = new Match();
         match.setBlackPieces(new ArrayList<>());
         Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1, 1));
+        promotedPawn.setId(1L);
+        match.getBlackPieces().add(promotedPawn);
 
         match.getBlackPieces().add(promotedPawn);
 
@@ -178,7 +180,7 @@ public class MatchTest {
         Match match = new Match();
         match.setBlackPieces(new ArrayList<>());
         Pawn promotedPawn = (Pawn) PieceFactory.create('P', PieceColor.BLACK, new Pair(1, 5));
-
+        promotedPawn.setId(1L);
         match.getBlackPieces().add(promotedPawn);
 
         Piece newPiece = PieceFactory.create('Q', PieceColor.BLACK);

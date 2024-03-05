@@ -212,7 +212,13 @@ public class Match {
     public void promoteAPawn(Pawn promotedPawn, Piece newPiece) throws IllegalMovementException {
         if (promotedPawn.isPromoted(BOARD_LENGHT) && (newPiece instanceof Queen || newPiece instanceof Rook
                 || newPiece instanceof Bishop || newPiece instanceof Knight)) {
-            promotedPawn.setAlive(false);
+            if(promotedPawn.getColor().equals(PieceColor.WHITE)) {
+                this.whitePieces.stream().filter(p ->
+                        p.getId().equals(promotedPawn.getId())).findFirst().orElseThrow().setAlive(false);
+            } else {
+                this.blackPieces.stream().filter(p ->
+                        p.getId().equals(promotedPawn.getId())).findFirst().orElseThrow().setAlive(false);
+            }
             newPiece.setColor(promotedPawn.getColor());
             newPiece.setPosition(promotedPawn.getPosition());
 
