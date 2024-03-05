@@ -15,9 +15,7 @@ import {PieceMovement} from "../models/piece-movement";
 import {PieceSelectorModalComponent} from "../components/piece-selector-modal/piece-selector-modal.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {PieceRequest} from "../models/piece-request";
-import {User} from "../../models/user";
 import {Piece} from "../models/piece";
-
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +32,7 @@ export class MatchSessionService implements OnInit, OnDestroy {
   private _isConnecting: boolean = false;
   private rivalIsConnected: boolean = false;
   private lastMovedPieceId: number | undefined;
-
+  private audio: HTMLAudioElement = new Audio();
   isConnectingSubject: Subject<boolean> = new Subject<boolean>();
   rivalIsConnectedSubject: Subject<boolean> = new Subject<boolean>();
 
@@ -195,6 +193,8 @@ export class MatchSessionService implements OnInit, OnDestroy {
         { centered: true, size: "sm", keyboard: false, backdrop: "static"});
     }
 
+    this.playSound("../../assets/move.wav");
+
     if (!this.rivalIsConnected) {
       this.rivalIsConnectedSubject.next(true);
       this.rivalIsConnected = true;
@@ -238,6 +238,7 @@ export class MatchSessionService implements OnInit, OnDestroy {
     if (match.status === GameStatus.FINISHED_BY_WIN) {
       finishReason = `El jugador ${match.winner == "BLACK" ? match.blackPlayer : match.whitePlayer}
       ha ganado el juego.`;
+      this.playSound("../../assets/checkmate.wav");
     } else if (match.status === GameStatus.FINISHED_BY_ABANDONMENT) {
       finishReason = `El jugador ${match.winner == "BLACK" ? match.whitePlayer : match.blackPlayer}
       ha abandonado el juego.`;
@@ -263,6 +264,12 @@ export class MatchSessionService implements OnInit, OnDestroy {
     this.playerTeamColor = undefined;
     this._isConnecting = false;
     this.rivalIsConnected = false;
+  }
+
+  private playSound(src: string) {
+    this.audio.src = src;
+    this.audio.load();
+    this.audio.play();
   }
 
   private setUpSocketConnection() {
