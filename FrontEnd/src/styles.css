@@ -13,3 +13,24 @@ body {
   background-color: transparent;
 }
 
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 576px) {
+  html {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 767px) {
+  html {
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 992px) {
+  html {
+    font-size: 25px;
+  }
+}

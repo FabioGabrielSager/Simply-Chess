@@ -27,6 +27,8 @@ app-board {
   grid-column-start: 2;
   grid-row-start: 1;
   color: var(--font-color);
+  padding-right: 3rem;
+  padding-left: 3rem;
 }
 
 .timer {
@@ -39,8 +41,11 @@ app-board {
   color: var(--font-color);
   grid-area: matchId;
   justify-self: center;
-  font-size: 1rem;
-  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.copy-btn {
+  width: 1rem;
 }
 
 .matchId button:hover {
@@ -74,7 +79,6 @@ app-board {
     "player" auto
     "matchId" auto /
     80%;
-    font-size: 3vw;
   }
 }
 
@@ -87,7 +91,6 @@ app-board {
     "player" auto
     "matchId" auto /
     80%;
-    font-size: 2vw;
   }
 }
 
@@ -101,7 +104,7 @@ app-board {
     "player" auto
     "matchId" auto /
     95%;
-    font-size: 100%;
+    font-size: 0.9rem;
   }
 }
 
@@ -112,15 +115,31 @@ app-board {
     "player board rival-player" auto
     "matchId matchId matchId" auto/
     1fr 1fr 1fr;
-    font-size: 3vh;
     column-gap: 10px;
     padding: 5px;
+    font-size: 0.5rem;
   }
   .player {
     place-self: end;
   }
   .rival-player {
     align-self: start;
+  }
+
+  .player-name {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .matchId {
+    color: var(--font-color);
+    grid-area: matchId;
+    justify-self: center;
+    font-size: 0.5rem;
+  }
+
+  .copy-btn {
+    width: 0.8rem;
   }
 }
 
@@ -131,7 +150,6 @@ app-board {
     "player board rival-player" auto
     "matchId matchId matchId" auto/
     1fr 3fr 1fr;
-    font-size: 3vh;
     column-gap: 10px;
     padding: 5px;
   }
@@ -197,5 +215,17 @@ app-board {
   }
   .rival-player {
     align-self: start;
+  }
+}
+
+@media (max-width: 507px) {
+  .matchId {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 438px) {
+  .matchId {
+    font-size: 0.6rem;
   }
 }

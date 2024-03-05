@@ -52,7 +52,11 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "allowedCommonJsDependencies": [
+                "sweetalert2",
+                "sockjs-client"
+              ]
             }
           },
           "defaultConfiguration": "production"

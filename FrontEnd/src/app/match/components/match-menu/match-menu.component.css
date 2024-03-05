@@ -8,8 +8,9 @@
   background-color: #4E2C0B;
   color: var(--font-color);
   border-radius: 10px;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  font-size: 1rem;
 }
 
 .btn:hover,
@@ -27,4 +28,30 @@ a img {
   bottom: 0;
   right: 0;
   color: rgba(207, 125, 46, 0.53);
+  font-size: 0.5rem;
+}
+
+@media (max-height: 613px) {
+  .btn {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    font-size: 0.6rem;
+  }
+}
+
+
+@media (max-height: 550px) {
+  .btn {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-height: 366px) {
+  .btn {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.4rem;
+  }
 }

@@ -9,7 +9,12 @@
   color: var(--font-color);
   border-radius: 10px;
   padding-top: 3rem ;
-  padding-bottom: 3rem ;
+  padding-bottom: 3rem;
+  font-size: 1rem;
+}
+
+.social-icons {
+  width: 5%;
 }
 
 .btn:hover,
@@ -17,8 +22,30 @@
   transform: scale(1.01);
 }
 
-a img {
-  width: 30px;
-  height: 30px;
+@media (max-width: 576px) {
+  .social-icons {
+    width: 10%;
+  }
 }
 
+@media (max-height: 613px) {
+  .btn {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+
+@media (max-height: 494px) {
+  .btn {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+@media (max-height: 339px) {
+  .btn {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}

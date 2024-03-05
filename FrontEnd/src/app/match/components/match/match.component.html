@@ -5,7 +5,7 @@
     </span>
   </div>
   <div class="rival-player">
-    <span class="player-name bg-black rounded-1 pe-5 ps-5"
+    <span class="player-name bg-black rounded-1"
           [ngClass]="{'bg-white text-dark': matchService.playerTeamColor == 'BLACK'}">
       {{ rivalPlayerName }}
     </span>
@@ -16,15 +16,15 @@
   ? matchService.match?.whitePieces : matchService.match?.blackPieces"
   (onPieceMove)="onPieceMove($event)"></app-board>
   <div class="player">
-    <span class="player-name bg-black rounded-1 pe-5 ps-5"
+    <span class="player-name bg-black rounded-1"
           [ngClass]="{'bg-white text-dark': matchService.playerTeamColor == 'WHITE'}">
       {{ playerName }}
     </span>
   </div>
   <div class="matchId">
     <span role="status">Match ID: {{ matchId }}</span>
-    <button class="btn border-0" type="button" (click)="onCopy()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+    <button class="btn border-0 p-0 ms-1 ms-sm-2 ms-md-3" type="button" (click)="onCopy()">
+      <svg class="copy-btn" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
            stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"
            data-darkreader-inline-stroke="" style="--darkreader-inline-stroke: currentColor;">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" data-darkreader-inline-stroke=""
