@@ -1,0 +1,21 @@
+<div class="modal-container">
+  <div class="modal-header border-0">
+    <span class="h6">Selecciona una pieza:</span>
+  </div>
+  <div class="modal-body">
+    <div class="d-flex justify-content-center column-gap-1">
+      <div class="piece-container flex-fill text-center z-3" (click)="onPieceSelected(queen)">
+        <span #queen class="piece" id="Q">♛</span>
+      </div>
+      <div class="piece-container flex-fill text-center" (click)="onPieceSelected(rook)">
+        <span #rook class="piece" id="R">♜</span>
+      </div>
+      <div class="piece-container flex-fill text-center" (click)="onPieceSelected(bishop)">
+        <span #bishop class="piece" id="B">♝</span>
+      </div>
+      <div class="piece-container flex-fill text-center" (click)="onPieceSelected(knight)">
+        <span #knight class="piece" id="N">♞</span>
+      </div>
+    </div>
+  </div>
+</div>

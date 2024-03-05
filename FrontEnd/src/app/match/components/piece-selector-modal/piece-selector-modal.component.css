@@ -1,0 +1,18 @@
+.modal-container {
+  background-color: var(--background);
+  color: var(--font-color);
+  border-radius: 20px;
+}
+
+.piece-container {
+  border: solid 1px var(--font-color);
+}
+
+.piece-container:hover {
+  transform: scale(1.05);
+}
+
+.piece {
+  font-size: 2.5rem;
+  user-select: none;
+}
