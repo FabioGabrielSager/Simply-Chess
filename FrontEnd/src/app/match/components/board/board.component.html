@@ -13,21 +13,20 @@
            [ngClass]="{'white-board-square': (row + ci+1) % 2 == 1,
            'black-board-square': (row + ci+1) % 2 == 0}">
         <ng-container *ngFor="let p of pieces">
-          <span *ngIf="p.position.y == row && p.position.x == ci + 1" #piece
-                [id]="p.id"
-                (click)="onSelectedPiece(piece)" class="piece"
-                [class.text-black]="p.color == 'BLACK'"
-                [class.text-white]="p.color == 'WHITE'"
-                style="z-index: 100;">
+            <span *ngIf="p.position.y == row && p.position.x == ci + 1 && p.alive" #piece
+                  [id]="p.id"
+                  (click)="onSelectedPiece(piece)" class="piece"
+                  [class.text-black]="p.color == 'BLACK'"
+                  [class.text-white]="p.color == 'WHITE'"
+                  style="z-index: 100;">
             {{ symbolToPieceIcon.get(p.type) }}</span>
         </ng-container>
         <ng-container *ngFor="let rp of rivalPieces">
-          <span *ngIf="rp.position.y == row && rp.position.x == ci + 1" #piece
-                [id]="rp.id"
-                (click)="onSelectedPiece(piece)" class="piece"
-                [class.text-black]="rp.color == 'BLACK'"
-                [class.text-white]="rp.color == 'WHITE'"
-                style="z-index: 100;">
+            <span *ngIf="rp.position.y == row && rp.position.x == ci + 1 && rp.alive" #piece
+                  [id]="rp.id" class="piece"
+                  [class.text-black]="rp.color == 'BLACK'"
+                  [class.text-white]="rp.color == 'WHITE'"
+                  style="z-index: 100; user-select: none">
             {{ symbolToPieceIcon.get(rp.type | uppercase) }}</span>
         </ng-container>
 

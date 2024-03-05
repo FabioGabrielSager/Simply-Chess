@@ -1,14 +1,15 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange, SimpleChanges} from '@angular/core';
-import {Piece} from "../../../models/piece";
-import {Pair} from "../../../models/pair";
-import {PieceMovement} from "../../../models/piece-movement";
+import {Piece} from "../../models/piece";
+import {Pair} from "../../models/pair";
+import {PieceMovement} from "../../models/piece-movement";
+import {PieceRequest} from "../../models/piece-request";
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
-export class BoardComponent implements OnInit,OnChanges {
+export class BoardComponent implements OnInit {
   rows: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
   columns: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   symbolToPieceIcon: Map<string, string> = new Map<string, string>([
@@ -21,7 +22,7 @@ export class BoardComponent implements OnInit,OnChanges {
   ]);
   @Input() pieces: Array<Piece> | undefined = new Array<Piece>();
   @Input() rivalPieces: Array<Piece> | undefined = new Array<Piece>();
-  @Output() movePieceEvent: EventEmitter<PieceMovement> = new EventEmitter<PieceMovement>();
+  @Output() onPieceMove: EventEmitter<PieceMovement> = new EventEmitter<PieceMovement>();
   selectedSquare: HTMLSpanElement | null = null;
   selectedPiece: HTMLSpanElement | null = null;
 
@@ -35,37 +36,58 @@ export class BoardComponent implements OnInit,OnChanges {
       }
   }
 
-  // TODO: See if it is necessary to implement this to update the board state.
-  ngOnChanges(changes: SimpleChanges): void {
-    for (const propName in changes) {
-      const change: SimpleChange = changes[propName];
-      for (let cp of change.currentValue as Array<Piece>) {
-        for (let pp in change.previousValue as Array<Piece>) {
+  onSelectedPiece(piece: HTMLSpanElement) {
+    if(this.pieces?.some((p: Piece) => p.id == Number(piece.id))) {
+      this.selectedPiece = piece;
+    }
+    else {
+      this.selectedPiece = null;
+    }
+  }
 
+
+  onSelectedSquare(square: HTMLDivElement) {
+    if (this.selectedPiece != null) {
+      const pieceOnSquare: HTMLSpanElement | null = square.querySelector('span');
+      if(pieceOnSquare == null)
+        this.emitMove(square);
+      else {
+        if(this.rivalPieces?.some((p: Piece) => p.id == Number(pieceOnSquare.id))) {
+          this.emitMove(square);
         }
       }
     }
   }
 
-  onSelectedPiece(piece: HTMLSpanElement) {
-    this.selectedPiece = piece;
-  }
+  private emitMove(pieceSquare: HTMLDivElement) {
+    let pieceId: number = Number(this.selectedPiece?.id);
+    let pieceToMoveRequest: PieceRequest = {
+      color: "BLACK",
+      position: {} as Pair
+    } as PieceRequest;
 
+    this.pieces?.every((p) => {
+      if(this.selectedPiece != null ) {
+        if(p.id == pieceId) {
+          pieceToMoveRequest.color = p.color;
+          pieceToMoveRequest.position = p.position;
+          return false;
+        }
+      }
+      return true;
+    });
 
-  onSelectedSquare(square: HTMLDivElement) {
-    if (this.selectedPiece != null && square.querySelector('span') == null) {
-      const pieceMovement: PieceMovement = {
-        pieceId: this.selectedPiece.id,
-        target: {
-          x: Number(square.id.at(0)),
-          y: Number(square.id.at(1))
-        } as Pair
-      } as PieceMovement
-      console.log(pieceMovement)
-      this.movePieceEvent.emit(pieceMovement);
+    const pieceMovement: PieceMovement = {
+      pieceId: pieceId,
+      pieceToMove: pieceToMoveRequest,
+      target: {
+        x: Number(pieceSquare.id.at(1)),
+        y: Number(pieceSquare.id.at(0))
+      } as Pair
+    } as PieceMovement
+    this.onPieceMove.emit(pieceMovement);
 
-      this.selectedPiece = null;
-      this.selectedSquare = null;
-    }
+    this.selectedPiece = null;
+    this.selectedSquare = null;
   }
 }

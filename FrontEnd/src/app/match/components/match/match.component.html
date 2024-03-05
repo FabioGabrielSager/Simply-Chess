@@ -13,7 +13,8 @@
   <app-board [pieces]="matchService.playerTeamColor == 'BLACK'
   ? matchService.match?.blackPieces : matchService.match?.whitePieces"
              [rivalPieces]="matchService.playerTeamColor == 'BLACK'
-  ? matchService.match?.whitePieces : matchService.match?.blackPieces"></app-board>
+  ? matchService.match?.whitePieces : matchService.match?.blackPieces"
+  (onPieceMove)="onPieceMove($event)"></app-board>
   <div class="player">
     <span class="player-name bg-black rounded-1 pe-5 ps-5"
           [ngClass]="{'bg-white text-dark': matchService.playerTeamColor == 'WHITE'}">

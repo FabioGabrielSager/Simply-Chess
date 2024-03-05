@@ -1,11 +1,10 @@
-import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Params} from "@angular/router";
-import {interval, map, Subscription} from "rxjs";
+import {interval, Subscription} from "rxjs";
 import {ClipboardService} from "ngx-clipboard";
 import {ToastService} from "../../../services/toast.service";
 import {MatchSessionService} from "../../services/match-session.service";
-import {Piece} from "../../../models/piece";
-import {Match} from "../../../models/match";
+import {PieceMovement} from "../../models/piece-movement";
 
 @Component({
   selector: 'app-match',
@@ -72,6 +71,10 @@ export class MatchComponent implements OnInit, OnDestroy {
       this.clipboardService.copy(this.matchId);
     }
     this.toastService.show("ID Copiada!", "bg-success")
+  }
+
+  onPieceMove($event: PieceMovement) {
+    this.matchService.gameplay($event);
   }
 
   private initTimer() {
