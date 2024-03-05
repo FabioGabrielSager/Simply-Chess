@@ -4,12 +4,11 @@ import {GameStatus} from "./game-status";
 export interface Match {
   id: string;
   status: GameStatus;
-  finishReason: string;
-  isWhiteTurn: boolean;
+  whiteTurn: boolean;
   whitePieces: Array<Piece>;
   blackPieces: Array<Piece>;
   whitePlayer: string;
   blackPlayer: string;
   winner: string;
-  isPromotedPawn: boolean;
+  promotedPawn: boolean;
 }

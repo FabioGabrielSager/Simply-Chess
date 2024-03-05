@@ -4,6 +4,6 @@ export interface Piece {
   id: number;
   position: Pair;
   color: string;
-  isAlive: boolean;
+  alive: boolean;
   type: string;
 }
