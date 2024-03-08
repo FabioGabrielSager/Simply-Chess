@@ -13,10 +13,12 @@ Además, el proyecto incluye una implementación de cola para buscar partidas, q
 - RxJS.
 
 ## Cómo correr la aplicación?
-1. Dirigirse al directorio BackEnd/.compose `cd BackEnd/.compose`.
-2. Levantar compose `sudo docker compose up`.
+1. Dirigirse al directorio BackEnd/MatchAPI y empaquetar aplicación `cd BackEnd/MatchAPI && mvn clean package`.
+2. Dirigirse al directorio BackEnd/PlayerAPI y empaquetar aplicación `cd ../BackEnd/PlayerAPI && mvn clean package`.
+3. Dirigirse al directorio BackEnd/.compose `cd ../BackEnd/.compose`.
+4. Levantar compose `sudo docker compose up`.
    - *Asegúrese de tener los puertos 8080, 8081 y 5432 disponibles.*
-3. Dirigirse al directorio FrondEnd/ `cd FronEnd`.
-4. Correr aplicación en modo developer `ng serve` o `npm start`.
+5. Dirigirse al directorio FrondEnd/ `cd FronEnd`.
+6. Correr aplicación en modo developer `ng serve` o `npm start`.
    - *Debidos a la configuraciones de CORS el FronEnd/ debe ser levantada de manera local en el puerto por defecto de la aplicaciones de AngularJS, es decir, el puerto 4200.*
    - *La aplicación de interfaz gráfica aún no ha sido configurada y optimizada para ser desplegada en producción.*
