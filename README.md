@@ -11,6 +11,7 @@ Además, el proyecto incluye una implementación de cola para buscar partidas, q
 - StompJS.
 - SockJS.
 - RxJS.
+- Docker.
 
 ## Cómo correr la aplicación?
 1. Dirigirse al directorio BackEnd/MatchAPI y empaquetar aplicación `cd BackEnd/MatchAPI && mvn clean package`.
